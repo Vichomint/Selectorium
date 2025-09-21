@@ -1,0 +1,88 @@
+<section class="bg-white rounded-lg shadow p-6 mb-8 border border-gray-100">
+  <h2 class="text-xl font-bold text-primary-700 mb-4">
+    <i class="fas fa-file-alt mr-2"></i> Postular a Desarrollador Frontend
+  </h2>
+
+  <form class="space-y-6">
+    <!-- Datos personales -->
+    <div>
+      <label class="block text-gray-700 text-sm font-bold mb-2"
+        >Nombre completo</label
+      >
+      <input
+        type="text"
+        class="shadow border rounded w-full py-2 px-3 text-gray-700 focus:ring-2 focus:ring-primary-300"
+      />
+    </div>
+
+    <div>
+      <label class="block text-gray-700 text-sm font-bold mb-2"
+        >Correo electrónico</label
+      >
+      <input
+        type="email"
+        class="shadow border rounded w-full py-2 px-3 text-gray-700 focus:ring-2 focus:ring-primary-300"
+      />
+    </div>
+
+    <!-- Subir CV -->
+    <div>
+      <label class="block text-gray-700 text-sm font-bold mb-2"
+        >Currículum (PDF o DOC)</label
+      >
+      <input
+        type="file"
+        class="w-full text-gray-700 border rounded p-2 bg-gray-50"
+      />
+    </div>
+
+    <!-- Preguntas del reclutador -->
+    <div>
+      <label class="block text-gray-700 text-sm font-bold mb-2"
+        >¿Cuántos años de experiencia tienes?</label
+      >
+      <select
+        class="shadow border rounded w-full py-2 px-3 text-gray-700 focus:ring-2 focus:ring-primary-300"
+      >
+        <option>Sin experiencia</option>
+        <option>1-2 años</option>
+        <option>3-5 años</option>
+        <option>5+ años</option>
+      </select>
+    </div>
+
+    <div>
+      <label class="block text-gray-700 text-sm font-bold mb-2"
+        >Disponibilidad</label
+      >
+      <select
+        class="shadow border rounded w-full py-2 px-3 text-gray-700 focus:ring-2 focus:ring-primary-300"
+      >
+        <option>Inmediata</option>
+        <option>15 días</option>
+        <option>30 días</option>
+      </select>
+    </div>
+
+    <div>
+      <label class="block text-gray-700 text-sm font-bold mb-2"
+        >Pretensión de renta</label
+      >
+      <input
+        type="text"
+        placeholder="Ej: $1.200.000 CLP"
+        class="shadow border rounded w-full py-2 px-3 text-gray-700 focus:ring-2 focus:ring-primary-300"
+      />
+    </div>
+
+    <!-- Botón -->
+    <div class="flex justify-end">
+      <button
+        type="submit"
+        class="bg-primary-500 hover:bg-primary-600 text-white font-bold py-2 px-4 rounded transition"
+      >
+        Enviar Postulación
+      </button>
+    </div>
+  </form>
+</section>

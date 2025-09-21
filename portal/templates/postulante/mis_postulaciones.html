@@ -1,0 +1,37 @@
+{% extends "layout_postulante.html" %}
+
+{% block title %}Mis Postulaciones - Selectorium{% endblock %}
+
+{% block main_content %}
+<h2 class="text-2xl font-bold text-primary-700 mb-6">
+  <i class="fas fa-user-check mr-2"></i> Mis Postulaciones
+</h2>
+
+<!-- Ejemplo de tabla de postulaciones -->
+<div class="overflow-x-auto">
+  <table class="w-full bg-white shadow-md rounded-lg overflow-hidden text-sm">
+    <thead class="bg-primary-600 text-white">
+      <tr>
+        <th class="px-4 py-2 text-left">Vacante</th>
+        <th class="px-4 py-2 text-left">Empresa</th>
+        <th class="px-4 py-2 text-left">Estado</th>
+        <th class="px-4 py-2 text-left">Fecha</th>
+      </tr>
+    </thead>
+    <tbody class="divide-y divide-gray-200">
+      <tr>
+        <td class="px-4 py-2">Desarrollador Frontend</td>
+        <td class="px-4 py-2">TechCorp</td>
+        <td class="px-4 py-2"><span class="text-green-600 font-medium">En revisión</span></td>
+        <td class="px-4 py-2">20/09/2025</td>
+      </tr>
+      <tr>
+        <td class="px-4 py-2">Analista de Datos</td>
+        <td class="px-4 py-2">DataSolutions</td>
+        <td class="px-4 py-2"><span class="text-yellow-600 font-medium">Pendiente</span></td>
+        <td class="px-4 py-2">18/09/2025</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+{% endblock %}

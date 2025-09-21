@@ -1,0 +1,104 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Login - Selectorium</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              primary: {
+                50: "#f0f9ff",
+                100: "#e0f2fe",
+                200: "#bae6fd",
+                300: "#7dd3fc",
+                400: "#38bdf8",
+                500: "#0ea5e9",
+                600: "#0284c7",
+                700: "#0369a1",
+                800: "#075985",
+                900: "#0c4a6e",
+              },
+            },
+          },
+        },
+      };
+    </script>
+  </head>
+  <body class="h-screen flex items-center justify-center bg-primary-600">
+    <div class="w-full max-w-sm bg-white rounded-xl shadow-lg overflow-hidden">
+      <!-- Cabecera con logo -->
+      <div class="bg-white flex justify-center items-center py-6 border-b">
+        <img
+          src="{% static 'img/logo_selectorium.png' %}"
+          alt="Selectorium Logo"
+          class="w-40"
+        />
+      </div>
+
+      <!-- Contenido del login -->
+      <div class="p-6">
+        <div class="text-center mb-5">
+          <h2 class="text-xl font-bold text-gray-800">
+            Bienvenido a <span class="text-primary-600">Selectorium</span>
+          </h2>
+          <p class="text-gray-500 text-sm">Inicia sesión para continuar</p>
+        </div>
+
+        {% if form.errors %}
+        <div class="bg-red-100 text-red-700 p-2 rounded mb-3 text-sm">
+          Usuario o contraseña incorrectos.
+        </div>
+        {% endif %}
+
+        <form method="post" class="space-y-3">
+          {% csrf_token %}
+          <div>
+            <label class="block text-gray-700 text-sm font-bold mb-1"
+              >Usuario</label
+            >
+            <input
+              type="text"
+              name="username"
+              required
+              class="shadow border rounded-lg w-full py-2 px-3 text-gray-700 focus:ring-2 focus:ring-primary-400 text-sm"
+            />
+          </div>
+
+          <div>
+            <label class="block text-gray-700 text-sm font-bold mb-1"
+              >Contraseña</label
+            >
+            <input
+              type="password"
+              name="password"
+              required
+              class="shadow border rounded-lg w-full py-2 px-3 text-gray-700 focus:ring-2 focus:ring-primary-400 text-sm"
+            />
+          </div>
+
+          <button
+            type="submit"
+            class="w-full bg-primary-500 hover:bg-primary-600 text-white font-bold py-2 px-4 rounded-lg transition text-sm"
+          >
+            <i class="fas fa-sign-in-alt mr-1"></i> Entrar
+          </button>
+        </form>
+
+        <div class="text-center mt-3">
+          <a href="#" class="text-primary-600 hover:underline text-xs"
+            >¿Olvidaste tu contraseña?</a
+          >
+        </div>
+      </div>
+    </div>
+  </body>
+</html>

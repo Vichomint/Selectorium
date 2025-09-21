@@ -1,0 +1,128 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Reclutador - TalentoHub</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              primary: {
+                50: "#f0f9ff",
+                100: "#e0f2fe",
+                200: "#bae6fd",
+                300: "#7dd3fc",
+                400: "#38bdf8",
+                500: "#0ea5e9",
+                600: "#0284c7",
+                700: "#0369a1",
+                800: "#075985",
+                900: "#0c4a6e",
+              },
+              secondary: {
+                50: "#f7fee7",
+                100: "#ecfccb",
+                200: "#d9f99d",
+                300: "#bef264",
+                400: "#a3e635",
+                500: "#84cc16",
+                600: "#65a30d",
+                700: "#4d7c0f",
+                800: "#3f6212",
+                900: "#365314",
+              },
+              accent: {
+                50: "#fefce8",
+                100: "#fef9c3",
+                200: "#fef08a",
+                300: "#fde047",
+                400: "#facc15",
+                500: "#eab308",
+                600: "#ca8a04",
+                700: "#a16207",
+                800: "#854d0e",
+                900: "#713f12",
+              },
+            },
+          },
+        },
+      };
+    </script>
+  </head>
+  <body class="h-screen flex items-center justify-center bg-primary-600">
+    <div class="w-full max-w-md bg-white rounded-xl shadow-lg p-6">
+      <div class="text-center mb-6">
+        <img
+          src="{% static 'img/logo_selectorium.png' %}"
+          alt="Selectorium Logo"
+          class="mx-auto w-28 mb-4"
+        />
+        <h2 class="text-2xl font-bold text-gray-800">Crear cuenta</h2>
+        <p class="text-gray-500 text-sm">Regístrate para comenzar</p>
+      </div>
+
+      <form method="post" class="space-y-4">
+        {% csrf_token %}
+        <div>
+          <label class="block text-sm font-bold text-gray-700 mb-1"
+            >Nombre</label
+          >
+          <input
+            type="text"
+            name="username"
+            required
+            class="w-full border rounded-lg px-3 py-2 shadow focus:ring-2 focus:ring-primary-400"
+          />
+        </div>
+        <div>
+          <label class="block text-sm font-bold text-gray-700 mb-1"
+            >Correo electrónico</label
+          >
+          <input
+            type="email"
+            name="email"
+            required
+            class="w-full border rounded-lg px-3 py-2 shadow focus:ring-2 focus:ring-primary-400"
+          />
+        </div>
+        <div>
+          <label class="block text-sm font-bold text-gray-700 mb-1"
+            >Contraseña</label
+          >
+          <input
+            type="password"
+            name="password1"
+            required
+            class="w-full border rounded-lg px-3 py-2 shadow focus:ring-2 focus:ring-primary-400"
+          />
+        </div>
+        <div>
+          <label class="block text-sm font-bold text-gray-700 mb-1"
+            >Confirmar contraseña</label
+          >
+          <input
+            type="password"
+            name="password2"
+            required
+            class="w-full border rounded-lg px-3 py-2 shadow focus:ring-2 focus:ring-primary-400"
+          />
+        </div>
+
+        <button
+          type="submit"
+          class="w-full bg-primary-500 hover:bg-primary-600 text-white font-bold py-2 px-4 rounded-lg transition"
+        >
+          Registrarme
+        </button>
+      </form>
+    </div>
+  </body>
+</html>

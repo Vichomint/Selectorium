@@ -1,0 +1,86 @@
+{% extends "layout_reclutador.html" %} {% block title %}Crear Vacante
+{%endblock%} {% block main_content %}
+<h2 class="text-2xl font-bold text-primary-700 mb-6">
+  <i class="fas fa-plus mr-2"></i> Crear Nueva Vacante
+</h2>
+
+<form method="post" class="bg-white shadow-md rounded-lg p-6 space-y-4">
+  {% csrf_token %}
+
+  <!-- Título -->
+  <div>
+    <label class="block text-sm font-bold text-gray-700 mb-1">Título</label>
+    <input
+      type="text"
+      name="titulo"
+      required
+      class="w-full border rounded-lg px-3 py-2 shadow focus:ring-2 focus:ring-primary-400"
+    />
+  </div>
+
+  <!-- Descripción -->
+  <div>
+    <label class="block text-sm font-bold text-gray-700 mb-1"
+      >Descripción</label
+    >
+    <textarea
+      name="descripcion"
+      rows="4"
+      required
+      class="w-full border rounded-lg px-3 py-2 shadow focus:ring-2 focus:ring-primary-400"
+    ></textarea>
+  </div>
+
+  <!-- Ubicación -->
+  <div>
+    <label class="block text-sm font-bold text-gray-700 mb-1">Ubicación</label>
+    <input
+      type="text"
+      name="ubicacion"
+      class="w-full border rounded-lg px-3 py-2 shadow focus:ring-2 focus:ring-primary-400"
+    />
+  </div>
+
+  <!-- Preguntas -->
+  <div id="preguntas-container">
+    <label class="block text-sm font-bold text-gray-700 mb-2"
+      >Preguntas adicionales</label
+    >
+    <input
+      type="text"
+      name="preguntas"
+      placeholder="Ej: ¿Cuál es tu experiencia con Django?"
+      class="w-full border rounded-lg px-3 py-2 shadow focus:ring-2 focus:ring-primary-400 mb-2"
+    />
+  </div>
+  <button
+    type="button"
+    id="add-question"
+    class="bg-gray-200 hover:bg-gray-300 text-gray-700 px-3 py-1 rounded"
+  >
+    + Agregar otra pregunta
+  </button>
+
+  <button
+    type="submit"
+    class="w-full bg-primary-500 hover:bg-primary-600 text-white font-bold py-2 px-4 rounded-lg transition"
+  >
+    Guardar Vacante
+  </button>
+</form>
+
+<script>
+  document
+    .getElementById("add-question")
+    .addEventListener("click", function () {
+      let container = document.getElementById("preguntas-container");
+      let input = document.createElement("input");
+      input.type = "text";
+      input.name = "preguntas";
+      input.placeholder = "Otra pregunta...";
+      input.className =
+        "w-full border rounded-lg px-3 py-2 shadow focus:ring-2 focus:ring-primary-400 mb-2";
+      container.appendChild(input);
+    });
+</script>
+{% endblock %}

@@ -1,7 +1,7 @@
-{% extends "base.html" %} {% load static %} {% block title %}Panel Postulante -
+{% extends "base.html" %} {% load static %} {% block title %}Panel Reclutador -
 Selectorium{% endblock %} {% block content %}
 <div class="flex h-screen">
-  <!-- Overlay (solo móvil) -->
+  <!-- Overlay móvil -->
   <div
     id="overlay"
     class="fixed inset-0 bg-black bg-opacity-50 hidden lg:hidden z-40"
@@ -20,41 +20,42 @@ Selectorium{% endblock %} {% block content %}
       />
     </div>
     <ul class="space-y-2">
-      <!-- Vacantes disponibles -->
       <li>
         <a
-          href="{% url 'listar_vacantes' %}"
-          class="flex items-center p-2 rounded-lg font-medium hover:bg-primary-700 {% if request.resolver_match.url_name == 'listar_vacantes' %}bg-primary-700{% endif %}"
+          href="{% url 'reclutador_dashboard' %}"
+          class="flex items-center p-2 rounded-lg font-medium hover:bg-primary-700 {% if request.resolver_match.url_name == 'reclutador_dashboard' %}bg-primary-700{% endif %}"
+        >
+          <i class="fas fa-home mr-3"></i> Dashboard
+        </a>
+      </li>
+      <li>
+        <a
+          href="{% url 'reclutador_vacantes' %}"
+          class="flex items-center p-2 rounded-lg font-medium hover:bg-primary-700 {% if request.resolver_match.url_name == 'crear_vacante' %}bg-primary-700{% endif %}"
         >
           <i class="fas fa-briefcase mr-3"></i> Vacantes
         </a>
       </li>
-
-      <!-- Mis Postulaciones -->
       <li>
         <a
-          href="{% url 'mis_postulaciones' %}"
-          class="flex items-center p-2 rounded-lg font-medium hover:bg-primary-700 {% if request.resolver_match.url_name == 'mis_postulaciones' %}bg-primary-700{% endif %}"
+          href="{% url 'reclutador_postulantes' %}"
+          class="flex items-center p-2 rounded-lg font-medium hover:bg-primary-700 {% if request.resolver_match.url_name == 'reclutador_postulantes' %}bg-primary-700{% endif %}"
         >
-          <i class="fas fa-user-check mr-3"></i> Mis Postulaciones
+          <i class="fas fa-users mr-3"></i> Postulantes
         </a>
       </li>
-
-      <!-- Mi Perfil -->
       <li>
         <a
-          href="{% url 'perfil_postulante' %}"
-          class="flex items-center p-2 rounded-lg font-medium hover:bg-primary-700 {% if request.resolver_match.url_name == 'perfil_postulante' %}bg-primary-700{% endif %}"
+          href="{% url 'reclutador_estadisticas' %}"
+          class="flex items-center p-2 rounded-lg font-medium hover:bg-primary-700 {% if request.resolver_match.url_name == 'reclutador_estadisticas' %}bg-primary-700{% endif %}"
         >
-          <i class="fas fa-id-card mr-3"></i> Mi Perfil
+          <i class="fas fa-chart-line mr-3"></i> Estadísticas
         </a>
       </li>
-
-      <!-- Configuración -->
       <li class="pt-4 mt-4 border-t border-primary-400">
         <a
-          href="{% url 'configuracion_postulante' %}"
-          class="flex items-center p-2 rounded-lg font-medium hover:bg-primary-700 {% if request.resolver_match.url_name == 'configuracion_postulante' %}bg-primary-700{% endif %}"
+          href="{% url 'reclutador_configuracion' %}"
+          class="flex items-center p-2 rounded-lg font-medium hover:bg-primary-700 {% if request.resolver_match.url_name == 'reclutador_configuracion' %}bg-primary-700{% endif %}"
         >
           <i class="fas fa-gear mr-3"></i> Configuración
         </a>
@@ -68,7 +69,6 @@ Selectorium{% endblock %} {% block content %}
     <nav
       class="bg-primary-600 text-white p-4 shadow-md flex justify-between items-center"
     >
-      <!-- Botón menú móvil -->
       <button
         id="menu-toggle"
         class="lg:hidden p-2 rounded hover:bg-primary-700"
@@ -76,7 +76,7 @@ Selectorium{% endblock %} {% block content %}
         <i class="fas fa-bars"></i>
       </button>
       <div class="flex items-center space-x-4">
-        <span class="text-sm">Postulante: {{ user.username }}</span>
+        <span class="text-sm">Reclutador: {{ user.username }}</span>
         <a
           href="{% url 'logout' %}"
           class="bg-white text-primary-600 px-3 py-1 rounded-lg font-medium hover:bg-gray-100"
@@ -93,7 +93,7 @@ Selectorium{% endblock %} {% block content %}
   </div>
 </div>
 
-<!-- Script -->
+<!-- Script para toggle -->
 <script>
   const menuToggle = document.getElementById("menu-toggle");
   const sidebar = document.getElementById("sidebar");
@@ -109,5 +109,4 @@ Selectorium{% endblock %} {% block content %}
     overlay.classList.add("hidden");
   });
 </script>
-
 {% endblock %}

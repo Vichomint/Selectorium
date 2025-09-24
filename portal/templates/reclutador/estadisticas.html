@@ -1,75 +1,10 @@
-<section class="bg-white rounded-lg shadow p-6 mb-8 border border-gray-100">
-  <h2 class="text-xl font-bold text-primary-700 mb-4">
-    <i class="fas fa-chart-pie mr-2"></i> Estadísticas - Desarrollador Frontend
-  </h2>
+{% extends "layout_reclutador.html" %} {% block title %}Estadísticas
+{%endblock%} {% block main_content %}
+<h2 class="text-2xl font-bold text-primary-700 mb-6">
+  <i class="fas fa-chart-line mr-2"></i> Estadísticas
+</h2>
 
-  <!-- Resumen -->
-  <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
-    <div class="bg-primary-50 p-4 rounded-lg text-center">
-      <p class="text-gray-500 text-sm">Total Postulantes</p>
-      <h3 class="text-2xl font-bold text-primary-700">120</h3>
-    </div>
-    <div class="bg-green-50 p-4 rounded-lg text-center">
-      <p class="text-gray-500 text-sm">Seleccionados</p>
-      <h3 class="text-2xl font-bold text-green-600">15</h3>
-    </div>
-    <div class="bg-yellow-50 p-4 rounded-lg text-center">
-      <p class="text-gray-500 text-sm">En Revisión</p>
-      <h3 class="text-2xl font-bold text-yellow-600">40</h3>
-    </div>
-    <div class="bg-red-50 p-4 rounded-lg text-center">
-      <p class="text-gray-500 text-sm">Rechazados</p>
-      <h3 class="text-2xl font-bold text-red-600">65</h3>
-    </div>
-  </div>
-
-  <!-- Tabla postulantes -->
-  <div class="overflow-x-auto">
-    <table class="min-w-full bg-white">
-      <thead class="bg-gray-100">
-        <tr>
-          <th
-            class="py-3 px-6 text-left text-xs font-medium text-gray-600 uppercase"
-          >
-            Nombre
-          </th>
-          <th
-            class="py-3 px-6 text-left text-xs font-medium text-gray-600 uppercase"
-          >
-            Correo
-          </th>
-          <th
-            class="py-3 px-6 text-left text-xs font-medium text-gray-600 uppercase"
-          >
-            Estado
-          </th>
-          <th
-            class="py-3 px-6 text-left text-xs font-medium text-gray-600 uppercase"
-          >
-            Acciones
-          </th>
-        </tr>
-      </thead>
-      <tbody class="divide-y divide-gray-200">
-        <tr class="hover:bg-primary-50">
-          <td class="py-4 px-6">María González</td>
-          <td class="py-4 px-6">maria@ejemplo.com</td>
-          <td class="py-4 px-6">
-            <span
-              class="px-2 py-1 text-xs rounded-full bg-yellow-100 text-yellow-800"
-              >En revisión</span
-            >
-          </td>
-          <td class="py-4 px-6">
-            <button class="text-primary-600 hover:text-primary-800 mr-3">
-              <i class="fas fa-eye"></i>
-            </button>
-            <button class="text-primary-600 hover:text-primary-800">
-              <i class="fas fa-comment"></i>
-            </button>
-          </td>
-        </tr>
-      </tbody>
-    </table>
-  </div>
-</section>
+<p class="text-gray-600">
+  Aquí podrás ver gráficos e informes de tus vacantes y postulantes.
+</p>
+{% endblock %}

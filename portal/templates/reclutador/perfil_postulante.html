@@ -1,0 +1,46 @@
+{% extends "layout_reclutador.html" %} {% block title %}Perfil del
+Postulante{%endblock%} {% block main_content %}
+<div class="bg-white shadow-md rounded-lg p-6">
+  <h2 class="text-2xl font-bold text-primary-700 mb-4">
+    {{ perfil.user.username }}
+  </h2>
+
+  <p class="text-sm text-gray-500 mb-2">Email: {{ perfil.user.email }}</p>
+  <p class="text-sm text-gray-500 mb-2">
+    Fecha de nacimiento: {{ perfil.fecha_nacimiento|date:"d/m/Y" }}
+  </p>
+
+  <div class="mt-4">
+    <h3 class="font-semibold text-gray-800">Estudios</h3>
+    <p class="text-gray-600 whitespace-pre-line">{{ perfil.estudios }}</p>
+  </div>
+
+  <div class="mt-4">
+    <h3 class="font-semibold text-gray-800">Experiencia laboral</h3>
+    <p class="text-gray-600 whitespace-pre-line">{{ perfil.experiencia }}</p>
+  </div>
+
+  <div class="mt-4">
+    <h3 class="font-semibold text-gray-800">Currículum</h3>
+    {% if perfil.cv %}
+    <a
+      href="{{ perfil.cv.url }}"
+      target="_blank"
+      class="text-primary-600 hover:underline"
+      >Ver CV</a
+    >
+    {% else %}
+    <p class="text-gray-500">No se ha cargado un CV.</p>
+    {% endif %}
+  </div>
+
+  <div class="mt-6">
+    <a
+      href="{% url 'reclutador_vacantes' %}"
+      class="bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-2 px-6 rounded-lg transition"
+    >
+      Volver
+    </a>
+  </div>
+</div>
+{% endblock %}

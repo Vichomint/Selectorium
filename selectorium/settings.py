@@ -76,10 +76,15 @@ WSGI_APPLICATION = 'selectorium.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'Selectorium',
+        'USER': 'postgres',
+        'PASSWORD': '1234',
+        'HOST': 'localhost',   # o 127.0.0.1
+        'PORT': '5432',        # puerto por defecto de PostgreSQL
     }
 }
+
 
 
 # Password validation
@@ -123,8 +128,8 @@ STATICFILES_DIRS = [BASE_DIR / "static"]
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-MEDIA_URL = "media/"
-MEDIA_ROOT = BASE_DIR / "media"
+MEDIA_URL = '/media/'
+MEDIA_ROOT = BASE_DIR / 'media'
 
 LANGUAGE_CODE = "es"
 TIME_ZONE = "America/Santiago"
@@ -132,6 +137,5 @@ USE_I18N = True
 USE_TZ = True
 
 LOGIN_URL = "login"
-LOGIN_REDIRECT_URL = "postulante_inicio"
 LOGOUT_REDIRECT_URL = "login"
 

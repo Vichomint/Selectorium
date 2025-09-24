@@ -1,61 +1,184 @@
-{% extends "layout_postulante.html" %} {% block title %}Mi Perfil -
-Selectorium{% endblock %} {% block main_content %}
-<h2 class="text-2xl font-bold text-primary-700 mb-6">
-  <i class="fas fa-id-card mr-2"></i> Mi Perfil
-</h2>
+{% extends "layout_postulante.html" %} {% load static %} {% block title %}Mi
+Perfil{% endblock %} {% block main_content %}
+<div class="bg-white shadow-md rounded-lg p-6 max-w-2xl mx-auto">
+  <!-- Imagen de perfil (círculo clicable) -->
+  <div class="flex flex-col items-center mb-6">
+    <div id="avatar-wrapper" class="relative">
+      {% if perfil.foto %}
+      <img
+        id="avatar-img"
+        src="{{ perfil.foto.url }}"
+        alt="Foto de perfil"
+        class="w-28 h-28 rounded-full object-cover border-4 border-primary-500 cursor-pointer"
+      />
+      {% else %}
+      <div
+        id="avatar-img"
+        class="w-28 h-28 flex items-center justify-center rounded-full bg-gray-200 text-gray-500 border-4 border-primary-500 cursor-pointer"
+      >
+        <i class="fas fa-user text-3xl"></i>
+      </div>
+      {% endif %}
 
-<form
-  method="post"
-  enctype="multipart/form-data"
-  class="bg-white shadow-md rounded-lg p-6 space-y-4"
->
-  {% csrf_token %}
+      <!-- Pequeño overlay de editar -->
+      <div
+        class="absolute -bottom-1 -right-1 bg-white rounded-full p-1 shadow-sm"
+      >
+        <i class="fas fa-camera text-sm text-primary-600"></i>
+      </div>
+    </div>
 
-  <div>
-    <label class="block text-sm font-bold text-gray-700 mb-1"
-      >Fecha de Nacimiento</label
-    >
+    <h2 class="mt-3 text-xl font-bold text-primary-700">
+      {{ perfil.user.username }}
+    </h2>
+    <p class="text-sm text-gray-500">{{ perfil.user.email }}</p>
+  </div>
+
+  <!-- Formulario -->
+  <form
+    method="post"
+    enctype="multipart/form-data"
+    class="space-y-4"
+    id="perfil-form"
+  >
+    {% csrf_token %}
+
     <input
-      type="date"
-      name="fecha_nacimiento"
-      class="w-full border rounded-lg px-3 py-2 shadow focus:ring-2 focus:ring-primary-400"
+      type="file"
+      name="foto"
+      id="foto-input"
+      accept="image/*"
+      class="hidden"
     />
-  </div>
-
-  <div>
-    <label class="block text-sm font-bold text-gray-700 mb-1">Estudios</label>
-    <textarea
-      name="estudios"
-      rows="2"
-      class="w-full border rounded-lg px-3 py-2 shadow focus:ring-2 focus:ring-primary-400"
-    ></textarea>
-  </div>
-
-  <div>
-    <label class="block text-sm font-bold text-gray-700 mb-1"
-      >Experiencia Laboral</label
-    >
-    <textarea
-      name="experiencia"
-      rows="3"
-      class="w-full border rounded-lg px-3 py-2 shadow focus:ring-2 focus:ring-primary-400"
-    ></textarea>
-  </div>
-
-  <div>
-    <label class="block text-sm font-bold text-gray-700 mb-1">Subir CV</label>
     <input
       type="file"
       name="cv"
-      class="w-full border rounded-lg px-3 py-2 shadow focus:ring-2 focus:ring-primary-400"
+      id="cv-input"
+      accept=".pdf,.doc,.docx"
+      class="hidden"
     />
-  </div>
 
-  <button
-    type="submit"
-    class="bg-primary-500 hover:bg-primary-600 text-white font-bold py-2 px-4 rounded-lg transition"
-  >
-    Guardar cambios
-  </button>
-</form>
+    <!-- Fecha de nacimiento -->
+    <div>
+      <label class="block text-sm font-bold text-gray-700 mb-1"
+        >Fecha de nacimiento</label
+      >
+      <input
+        type="date"
+        name="fecha_nacimiento"
+        value="{{ perfil.fecha_nacimiento|date:'Y-m-d' }}"
+        class="w-full border rounded-lg px-3 py-2 shadow focus:ring-2 focus:ring-primary-400"
+      />
+    </div>
+
+    <!-- Estudios -->
+    <div>
+      <label class="block text-sm font-bold text-gray-700 mb-1">Estudios</label>
+      <textarea
+        name="estudios"
+        rows="3"
+        class="w-full border rounded-lg px-3 py-2 shadow focus:ring-2 focus:ring-primary-400"
+      >
+{{ perfil.estudios }}</textarea
+      >
+    </div>
+
+    <!-- Experiencia -->
+    <div>
+      <label class="block text-sm font-bold text-gray-700 mb-1"
+        >Experiencia laboral</label
+      >
+      <textarea
+        name="experiencia"
+        rows="3"
+        class="w-full border rounded-lg px-3 py-2 shadow focus:ring-2 focus:ring-primary-400"
+      >
+{{ perfil.experiencia }}</textarea
+      >
+    </div>
+
+    <!-- CV -->
+    <div>
+      <label class="block text-sm font-bold text-gray-700 mb-1"
+        >Currículum</label
+      >
+      {% if perfil.cv %}
+      <p class="text-sm text-gray-600 mb-1">
+        Archivo cargado:
+        <a
+          href="{{ perfil.cv.url }}"
+          class="text-primary-600 hover:underline"
+          target="_blank"
+          >Ver CV</a
+        >
+      </p>
+      {% endif %}
+      <label
+        for="cv-input"
+        class="inline-block bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold py-2 px-4 rounded-lg cursor-pointer"
+      >
+        <i class="fas fa-upload mr-2"></i> Subir / Cambiar CV
+      </label>
+    </div>
+
+    <div class="flex justify-between items-center">
+      <button
+        type="submit"
+        class="bg-primary-500 hover:bg-primary-600 text-white font-bold py-2 px-6 rounded-lg transition"
+      >
+        Guardar cambios
+      </button>
+
+      {% if perfil.foto %}
+      <a
+        href="{% url 'perfil_borrar_foto' %}"
+        class="text-sm text-red-600 hover:underline"
+        >Eliminar foto</a
+      >
+      {% endif %}
+    </div>
+  </form>
+</div>
+
+<!-- JS: abrir file dialog al click en avatar + preview -->
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    const avatarWrapper = document.getElementById("avatar-wrapper");
+    const fotoInput = document.getElementById("foto-input");
+    let avatarImg = document.getElementById("avatar-img");
+
+    // Click en el avatar abre el file input
+    avatarWrapper.addEventListener("click", () => {
+      fotoInput.click();
+    });
+
+    // Preview de la foto seleccionada
+    fotoInput.addEventListener("change", (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      if (!file.type.startsWith("image/")) {
+        alert("Por favor selecciona una imagen.");
+        return;
+      }
+
+      const reader = new FileReader();
+      reader.onload = function (evt) {
+        if (avatarImg.tagName === "DIV") {
+          const img = document.createElement("img");
+          img.id = "avatar-img";
+          img.src = evt.target.result;
+          img.alt = "Foto de perfil";
+          img.className =
+            "w-28 h-28 rounded-full object-cover border-4 border-primary-500 cursor-pointer";
+          avatarWrapper.replaceChild(img, avatarImg);
+          avatarImg = img;
+        } else {
+          avatarImg.src = evt.target.result;
+        }
+      };
+      reader.readAsDataURL(file);
+    });
+  });
+</script>
 {% endblock %}

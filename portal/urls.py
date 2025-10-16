@@ -31,6 +31,11 @@ urlpatterns = [
     path("reclutador/vacantes/crear/", views.crear_vacante, name="crear_vacante"),
     path("reclutador/vacantes/<int:vacante_id>/", views.administrar_vacante, name="administrar_vacante"),
     path("reclutador/postulante/<int:postulante_id>/", views.perfil_postulante_detalle, name="perfil_postulante_detalle"),
+    path(
+    "reclutador/vacantes/<int:vacante_id>/postulante/<int:postulacion_id>/",
+    views.detalle_postulante,
+    name="detalle_postulante",
+),
     
 
 ]

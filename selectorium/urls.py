@@ -6,6 +6,7 @@ from django.conf.urls.static import static
 urlpatterns = [
     path("admin/", admin.site.urls),
     path("", include("portal.urls")),
+    path("matchmaker/", include("matchmaker.urls")),
 ]
 
 if settings.DEBUG:

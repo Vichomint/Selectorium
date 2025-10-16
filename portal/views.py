@@ -3,6 +3,8 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User
 from django.contrib.auth.decorators import login_required
 from .models import Profile , Vacante, Postulacion,Pregunta,Respuesta
+from django.utils import timezone
+from django.contrib import messages
 
 # LOGIN
 def login_view(request):
@@ -41,31 +43,63 @@ def postulante_dashboard(request):
 
 @login_required
 def perfil_postulante(request):
-    # Aseguramos que exista el profile
+    # Crea el perfil si no existe
     perfil, created = Profile.objects.get_or_create(user=request.user)
-    
+    errores = []
+
     if request.method == "POST":
-        # Campos simples
-        fecha = request.POST.get("fecha_nacimiento") or None
-        estudios = request.POST.get("estudios", "").strip()
-        experiencia = request.POST.get("experiencia", "").strip()
+        # Datos generales
+        perfil.fecha_nacimiento = request.POST.get("fecha_nacimiento")
+        perfil.nivel_educacion = request.POST.get("nivel_educacion")
+        perfil.area_profesional = request.POST.get("area_profesional")
+        perfil.anios_experiencia = request.POST.get("anios_experiencia")
+        perfil.tipo_jornada = request.POST.get("tipo_jornada")
+        perfil.pretension_renta = request.POST.get("pretension_renta")
+        perfil.disponibilidad = request.POST.get("disponibilidad")
+        perfil.movilidad = request.POST.get("movilidad") == "on"
 
-        perfil.fecha_nacimiento = fecha
-        perfil.estudios = estudios
-        perfil.experiencia = experiencia
+        # Chips (habilidades blandas y técnicas)
+        perfil.habilidades_blandas = request.POST.get("habilidades_blandas", "").strip()
+        perfil.habilidades_tecnicas = request.POST.get("habilidades_tecnicas", "").strip()
 
-        # Archivos: CV y foto
-        if request.FILES.get("cv"):
-            perfil.cv = request.FILES["cv"]
-        if request.FILES.get("foto"):
+        # Archivos
+        if "foto" in request.FILES:
             perfil.foto = request.FILES["foto"]
+        if "cv" in request.FILES:
+            perfil.cv = request.FILES["cv"]
 
-        perfil.save()
-        # Redirigir para evitar reenvío al refrescar y para que se vea lo guardado
-        return redirect("perfil_postulante")
+        # Validaciones obligatorias
+        if not perfil.cv:
+            errores.append("Debe subir su currículum antes de continuar.")
+        if not perfil.area_profesional or not perfil.nivel_educacion:
+            errores.append("Debe completar su formación y área profesional.")
+        if not perfil.pretension_renta:
+            errores.append("Debe indicar su pretensión de renta.")
 
-    # GET: render con datos actuales (si los hay)
-    return render(request, "postulante/perfil_postulante.html", {"perfil": perfil})
+        # Guardar si no hay errores
+        if not errores:
+            perfil.save()
+            messages.success(request," ")
+            return redirect("perfil_postulante")
+
+    # Separar chips para mostrar como listas
+    habilidades_blandas = [
+        c.strip() for c in (perfil.habilidades_blandas or "").split(",") if c.strip()
+    ]
+    habilidades_tecnicas = [
+        c.strip() for c in (perfil.habilidades_tecnicas or "").split(",") if c.strip()
+    ]
+
+    context = {
+        "perfil": perfil,
+        "errores": errores,
+        "habilidades_blandas": habilidades_blandas,
+        "habilidades_tecnicas": habilidades_tecnicas,
+    }
+
+    return render(request, "postulante/perfil_postulante.html", context)
+
+
 
 # Reclutador
 @login_required
@@ -94,14 +128,6 @@ def postulante_dashboard(request):
 def mis_postulaciones(request):
     return render(request, "postulante/mis_postulaciones.html")
 
-# Mi Perfil
-@login_required
-def perfil_postulante(request):
-    if request.method == "POST":
-        # Aquí podrías guardar la información del perfil
-        # ej: fecha_nacimiento, estudios, experiencia, cv
-        pass
-    return render(request, "postulante/perfil_postulante.html")
 
 # Configuración
 @login_required
@@ -124,7 +150,19 @@ def reclutador_vacantes(request):
 
 @login_required
 def reclutador_postulantes(request):
-    return render(request, "reclutador/postulantes.html")
+    postulaciones = Postulacion.objects.select_related(
+        'postulante',
+        'vacante'
+    ).filter(vacante__reclutador=request.user)
+    
+    print("DEBUG - Número de postulaciones:", postulaciones.count())  # Debug
+    for p in postulaciones:
+        print(f"DEBUG - Postulante: {p.postulante.first_name}")  # Debug
+    
+    return render(request, "reclutador/postulantes.html", {
+        'postulaciones': postulaciones
+    })
+
 
 @login_required
 def reclutador_estadisticas(request):
@@ -222,10 +260,20 @@ def detalle_vacante(request, vacante_id):
     return render(request, "postulante/detalle_vacante.html", {"vacante": vacante})
 
 
+
 @login_required
 def administrar_vacante(request, vacante_id):
-    vacante = Vacante.objects.get(id=vacante_id, reclutador=request.user)
-    postulaciones = Postulacion.objects.filter(vacante=vacante).select_related("postulante").prefetch_related("respuestas__pregunta")
+    vacante = get_object_or_404(Vacante, id=vacante_id, reclutador=request.user)
+    postulaciones = Postulacion.objects.filter(vacante=vacante).select_related("postulante")
+
+    # Marcar como visto (cuando reclutador hace clic)
+    if request.method == "POST":
+        postulacion_id = request.POST.get("postulacion_id")
+        postulacion = get_object_or_404(Postulacion, id=postulacion_id, vacante=vacante)
+        if postulacion.estado == "enviado":
+            postulacion.estado = "visto"
+            postulacion.save()
+        return redirect("administrar_vacante", vacante_id=vacante.id)
 
     return render(request, "reclutador/administrar_vacante.html", {
         "vacante": vacante,
@@ -237,17 +285,17 @@ def administrar_vacante(request, vacante_id):
 @login_required
 def detalle_vacante(request, vacante_id):
     vacante = Vacante.objects.get(id=vacante_id)
-    preguntas = vacante.preguntas.all()
+    # Verificar si ya existe una postulación del usuario
+    ya_postulado = Postulacion.objects.filter(postulante=request.user, vacante=vacante).exists()
 
-    if request.method == "POST":
-        postulacion = Postulacion.objects.create(postulante=request.user, vacante=vacante)
-        for p in preguntas:
-            respuesta = request.POST.get(f"respuesta_{p.id}")
-            Respuesta.objects.create(postulacion=postulacion, pregunta=p, texto=respuesta)
-        messages.success(request, "Tu postulación ha sido enviada con éxito.")
-        return redirect("listar_vacantes")
+    if request.method == "POST" and not ya_postulado:
+        Postulacion.objects.create(postulante=request.user, vacante=vacante, estado="enviado")
+        return redirect("mis_postulaciones")
 
-    return render(request, "postulante/detalle_vacante.html", {"vacante": vacante, "preguntas": preguntas})
+    return render(request, "postulante/detalle_vacante.html", {
+        "vacante": vacante,
+        "ya_postulado": ya_postulado,
+    })
 
 @login_required
 def perfil_postulante_detalle(request, postulante_id):
@@ -263,3 +311,29 @@ def perfil_borrar_foto(request):
         perfil.foto = None
         perfil.save()
     return redirect("perfil_postulante")
+
+
+@login_required
+def mis_postulaciones(request):
+    postulaciones = Postulacion.objects.filter(postulante=request.user).select_related("vacante")
+    return render(request, "postulante/mis_postulaciones.html", {"postulaciones": postulaciones})
+
+@login_required
+def detalle_postulante(request, vacante_id, postulacion_id):
+    postulacion = get_object_or_404(Postulacion, id=postulacion_id, vacante__id=vacante_id, vacante__reclutador=request.user)
+
+    # Si aún no se ha marcado como visto → lo marcamos
+    if postulacion.estado == "enviado":
+        postulacion.estado = "visto"
+        postulacion.fecha_visto = timezone.now()
+        postulacion.save()
+
+    # Aquí puedes traer también el perfil del postulante y sus respuestas
+    perfil = getattr(postulacion.postulante, "profile", None)
+    respuestas = postulacion.respuestas.select_related("pregunta").all() if hasattr(postulacion, "respuestas") else []
+
+    return render(request, "reclutador/detalle_postulante.html", {
+        "postulacion": postulacion,
+        "perfil": perfil,
+        "respuestas": respuestas,
+    })

@@ -1,184 +1,260 @@
-{% extends "layout_postulante.html" %} {% load static %} {% block title %}Mi
-Perfil{% endblock %} {% block main_content %}
-<div class="bg-white shadow-md rounded-lg p-6 max-w-2xl mx-auto">
-  <!-- Imagen de perfil (círculo clicable) -->
+{% extends "layout_postulante.html" %}
+{% load static %}
+
+{% block title %}Mi Perfil{% endblock %}
+
+{% block main_content %}
+
+<!-- ✅ Bloque de notificación tipo Toast -->
+{% if messages %}
+  <div id="toast-container" class="fixed top-5 right-5 z-50 space-y-3">
+    {% for message in messages %}
+      <div class="max-w-sm w-full backdrop-blur-md bg-white/80 border border-gray-200 rounded-xl shadow-lg p-4 flex items-start gap-3 transition transform duration-300"
+           x-data="{ visible: true }"
+           x-show="visible"
+           x-transition.opacity.out.duration.500ms
+           x-init="setTimeout(() => visible = false, 4000)">
+        {% if message.tags == 'success' %}
+          <div class="flex-shrink-0 text-green-500">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+            </svg>
+          </div>
+        {% elif message.tags == 'error' %}
+          <div class="flex-shrink-0 text-red-500">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </div>
+        {% endif %}
+        <div class="flex-1">
+          <p class="font-semibold text-gray-900">
+            {% if message.tags == 'success' %}Guardado correctamente{% else %}Error al guardar{% endif %}
+          </p>
+          <p class="text-sm text-gray-600">{{ message }}</p>
+        </div>
+        <button type="button" class="text-gray-400 hover:text-gray-600" @click="visible = false">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+      </div>
+    {% endfor %}
+  </div>
+{% endif %}
+
+<!-- ✅ Contenido principal -->
+<div class="bg-white shadow-md rounded-lg p-6 max-w-3xl mx-auto mt-6">
+
+  <!-- Imagen de perfil -->
   <div class="flex flex-col items-center mb-6">
     <div id="avatar-wrapper" class="relative">
       {% if perfil.foto %}
-      <img
-        id="avatar-img"
-        src="{{ perfil.foto.url }}"
-        alt="Foto de perfil"
-        class="w-28 h-28 rounded-full object-cover border-4 border-primary-500 cursor-pointer"
-      />
+        <img id="avatar-img" src="{{ perfil.foto.url }}" alt="Foto de perfil"
+             class="w-28 h-28 rounded-full object-cover border-4 border-primary-500" />
       {% else %}
-      <div
-        id="avatar-img"
-        class="w-28 h-28 flex items-center justify-center rounded-full bg-gray-200 text-gray-500 border-4 border-primary-500 cursor-pointer"
-      >
-        <i class="fas fa-user text-3xl"></i>
-      </div>
+        <div id="avatar-img" class="w-28 h-28 flex items-center justify-center rounded-full bg-gray-200 text-gray-500 border-4 border-primary-500">
+          <i class="fas fa-user text-3xl"></i>
+        </div>
       {% endif %}
-
-      <!-- Pequeño overlay de editar -->
-      <div
-        class="absolute -bottom-1 -right-1 bg-white rounded-full p-1 shadow-sm"
-      >
-        <i class="fas fa-camera text-sm text-primary-600"></i>
-      </div>
     </div>
 
-    <h2 class="mt-3 text-xl font-bold text-primary-700">
-      {{ perfil.user.username }}
-    </h2>
+    <h2 class="mt-3 text-xl font-bold text-primary-700">{{ perfil.user.username }}</h2>
     <p class="text-sm text-gray-500">{{ perfil.user.email }}</p>
   </div>
 
-  <!-- Formulario -->
-  <form
-    method="post"
-    enctype="multipart/form-data"
-    class="space-y-4"
-    id="perfil-form"
-  >
+  {% if errores %}
+    <div class="bg-red-50 border border-red-200 text-red-700 p-3 mb-4 rounded-lg text-sm">
+      <ul class="list-disc list-inside">
+        {% for e in errores %}<li>{{ e }}</li>{% endfor %}
+      </ul>
+    </div>
+  {% endif %}
+
+  <form method="post" enctype="multipart/form-data" class="space-y-5" id="perfil-form">
     {% csrf_token %}
 
-    <input
-      type="file"
-      name="foto"
-      id="foto-input"
-      accept="image/*"
-      class="hidden"
-    />
-    <input
-      type="file"
-      name="cv"
-      id="cv-input"
-      accept=".pdf,.doc,.docx"
-      class="hidden"
-    />
+    <!-- Datos personales -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div>
+        <label class="block text-sm font-bold text-gray-700 mb-1">Fecha de nacimiento</label>
+        <input type="date" name="fecha_nacimiento" value="{{ perfil.fecha_nacimiento|date:'Y-m-d' }}"
+               class="form-input" disabled>
+      </div>
 
-    <!-- Fecha de nacimiento -->
-    <div>
-      <label class="block text-sm font-bold text-gray-700 mb-1"
-        >Fecha de nacimiento</label
-      >
-      <input
-        type="date"
-        name="fecha_nacimiento"
-        value="{{ perfil.fecha_nacimiento|date:'Y-m-d' }}"
-        class="w-full border rounded-lg px-3 py-2 shadow focus:ring-2 focus:ring-primary-400"
-      />
+      <div>
+        <label class="block text-sm font-bold text-gray-700 mb-1">Nivel educativo</label>
+        <select name="nivel_educacion" class="form-input" disabled>
+          <option value="">Seleccione...</option>
+          <option value="basica" {% if perfil.nivel_educacion == "basica" %}selected{% endif %}>Educación básica</option>
+          <option value="media" {% if perfil.nivel_educacion == "media" %}selected{% endif %}>Educación media</option>
+          <option value="tecnico" {% if perfil.nivel_educacion == "tecnico" %}selected{% endif %}>Técnico</option>
+          <option value="profesional" {% if perfil.nivel_educacion == "profesional" %}selected{% endif %}>Profesional</option>
+          <option value="postgrado" {% if perfil.nivel_educacion == "postgrado" %}selected{% endif %}>Postgrado / Magíster / Doctorado</option>
+        </select>
+      </div>
+
+      <div>
+        <label class="block text-sm font-bold text-gray-700 mb-1">Área profesional</label>
+        <input type="text" name="area_profesional" value="{{ perfil.area_profesional }}"
+               class="form-input" disabled>
+      </div>
+
+      <div>
+        <label class="block text-sm font-bold text-gray-700 mb-1">Años de experiencia</label>
+        <input type="number" name="anios_experiencia" value="{{ perfil.anios_experiencia }}"
+               class="form-input" disabled>
+      </div>
+
+      <div>
+        <label class="block text-sm font-bold text-gray-700 mb-1">Tipo de jornada</label>
+        <select name="tipo_jornada" class="form-input" disabled>
+          <option value="">Seleccione...</option>
+          <option value="completa" {% if perfil.tipo_jornada == "completa" %}selected{% endif %}>Jornada completa</option>
+          <option value="media" {% if perfil.tipo_jornada == "media" %}selected{% endif %}>Media jornada</option>
+          <option value="por_proyecto" {% if perfil.tipo_jornada == "por_proyecto" %}selected{% endif %}>Por proyecto / freelance</option>
+        </select>
+      </div>
+
+      <div>
+        <label class="block text-sm font-bold text-gray-700 mb-1">Pretensión de renta (CLP)</label>
+        <input type="text" name="pretension_renta" value="{{ perfil.pretension_renta }}"
+               class="form-input" disabled>
+      </div>
+
+      <div>
+        <label class="block text-sm font-bold text-gray-700 mb-1">Disponibilidad</label>
+        <select name="disponibilidad" class="form-input" disabled>
+          <option value="">Seleccione...</option>
+          <option value="inmediata" {% if perfil.disponibilidad == "inmediata" %}selected{% endif %}>Inmediata</option>
+          <option value="15_dias" {% if perfil.disponibilidad == "15_dias" %}selected{% endif %}>Dentro de 15 días</option>
+          <option value="30_dias" {% if perfil.disponibilidad == "30_dias" %}selected{% endif %}>Dentro de 30 días</option>
+          <option value="otros" {% if perfil.disponibilidad == "otros" %}selected{% endif %}>Otros</option>
+        </select>
+      </div>
+
+      <div class="flex items-center">
+        <input type="checkbox" name="movilidad" id="movilidad" {% if perfil.movilidad %}checked{% endif %}
+               class="h-4 w-4 text-primary-600 border-gray-300 rounded" disabled>
+        <label for="movilidad" class="ml-2 text-sm text-gray-700">Cuento con movilidad (auto propio)</label>
+      </div>
     </div>
 
-    <!-- Estudios -->
+    <!-- CHIPS -->
     <div>
-      <label class="block text-sm font-bold text-gray-700 mb-1">Estudios</label>
-      <textarea
-        name="estudios"
-        rows="3"
-        class="w-full border rounded-lg px-3 py-2 shadow focus:ring-2 focus:ring-primary-400"
-      >
-{{ perfil.estudios }}</textarea
-      >
+      <label class="block text-sm font-bold text-gray-700 mb-1">Habilidades blandas</label>
+      <div id="chips-blandas" class="flex flex-wrap gap-2 p-2 border rounded-lg min-h-[45px]">
+        {% for chip in habilidades_blandas %}
+          <span class="chip">{{ chip }}</span>
+        {% endfor %}
+        <input id="input-blandas" type="text" class="chip-input hidden" placeholder="Presione Enter para agregar" />
+      </div>
+      <input type="hidden" name="habilidades_blandas" id="hidden-blandas" value="{{ perfil.habilidades_blandas }}">
     </div>
 
-    <!-- Experiencia -->
     <div>
-      <label class="block text-sm font-bold text-gray-700 mb-1"
-        >Experiencia laboral</label
-      >
-      <textarea
-        name="experiencia"
-        rows="3"
-        class="w-full border rounded-lg px-3 py-2 shadow focus:ring-2 focus:ring-primary-400"
-      >
-{{ perfil.experiencia }}</textarea
-      >
+      <label class="block text-sm font-bold text-gray-700 mb-1">Habilidades técnicas</label>
+      <div id="chips-tecnicas" class="flex flex-wrap gap-2 p-2 border rounded-lg min-h-[45px]">
+        {% for chip in habilidades_tecnicas %}
+          <span class="chip">{{ chip }}</span>
+        {% endfor %}
+        <input id="input-tecnicas" type="text" class="chip-input hidden" placeholder="Presione Enter para agregar" />
+      </div>
+      <input type="hidden" name="habilidades_tecnicas" id="hidden-tecnicas" value="{{ perfil.habilidades_tecnicas }}">
     </div>
 
     <!-- CV -->
     <div>
-      <label class="block text-sm font-bold text-gray-700 mb-1"
-        >Currículum</label
-      >
+      <label class="block text-sm font-bold text-gray-700 mb-1">Currículum (PDF)</label>
       {% if perfil.cv %}
-      <p class="text-sm text-gray-600 mb-1">
-        Archivo cargado:
-        <a
-          href="{{ perfil.cv.url }}"
-          class="text-primary-600 hover:underline"
-          target="_blank"
-          >Ver CV</a
-        >
-      </p>
+        <p class="text-sm text-gray-600 mb-1">Archivo cargado:
+          <a href="{{ perfil.cv.url }}" target="_blank" class="text-primary-600 hover:underline">Ver CV</a>
+        </p>
       {% endif %}
-      <label
-        for="cv-input"
-        class="inline-block bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold py-2 px-4 rounded-lg cursor-pointer"
-      >
-        <i class="fas fa-upload mr-2"></i> Subir / Cambiar CV
-      </label>
+      <input type="file" name="cv" accept=".pdf" class="form-input" disabled>
     </div>
 
-    <div class="flex justify-between items-center">
-      <button
-        type="submit"
-        class="bg-primary-500 hover:bg-primary-600 text-white font-bold py-2 px-6 rounded-lg transition"
-      >
-        Guardar cambios
-      </button>
-
-      {% if perfil.foto %}
-      <a
-        href="{% url 'perfil_borrar_foto' %}"
-        class="text-sm text-red-600 hover:underline"
-        >Eliminar foto</a
-      >
-      {% endif %}
+    <!-- Botones -->
+    <div class="flex justify-end space-x-3">
+      <button type="button" id="editar-btn" class="btn-secondary">Editar perfil</button>
+      <button type="submit" id="guardar-btn" class="btn-primary hidden">Guardar cambios</button>
     </div>
   </form>
 </div>
 
-<!-- JS: abrir file dialog al click en avatar + preview -->
+<!-- ✅ Estilos base -->
+<style>
+.chip { @apply bg-primary-100 text-primary-700 px-3 py-1 rounded-full text-sm font-medium cursor-default; }
+.chip.removable::after { content: "×"; margin-left: 6px; cursor: pointer; font-weight: bold; }
+.chip-input { @apply flex-grow border-none focus:ring-0 text-sm; }
+.form-input { @apply w-full border rounded-lg px-3 py-2 shadow focus:ring-2 focus:ring-primary-400; }
+</style>
+
+<!-- ✅ Scripts -->
+<script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
 <script>
-  document.addEventListener("DOMContentLoaded", function () {
-    const avatarWrapper = document.getElementById("avatar-wrapper");
-    const fotoInput = document.getElementById("foto-input");
-    let avatarImg = document.getElementById("avatar-img");
+document.addEventListener("DOMContentLoaded", () => {
+  const editarBtn = document.getElementById("editar-btn");
+  const guardarBtn = document.getElementById("guardar-btn");
+  const form = document.getElementById("perfil-form");
+  const inputs = form.querySelectorAll("input, select, textarea");
 
-    // Click en el avatar abre el file input
-    avatarWrapper.addEventListener("click", () => {
-      fotoInput.click();
-    });
+  // Si el perfil está vacío, activar modo edición automáticamente
+  const tieneDatos = "{{ perfil.area_profesional }}" !== "";
+  if (!tieneDatos) {
+    inputs.forEach(el => el.disabled = false);
+    editarBtn.classList.add("hidden");
+    guardarBtn.classList.remove("hidden");
+  }
 
-    // Preview de la foto seleccionada
-    fotoInput.addEventListener("change", (e) => {
-      const file = e.target.files[0];
-      if (!file) return;
-
-      if (!file.type.startsWith("image/")) {
-        alert("Por favor selecciona una imagen.");
-        return;
-      }
-
-      const reader = new FileReader();
-      reader.onload = function (evt) {
-        if (avatarImg.tagName === "DIV") {
-          const img = document.createElement("img");
-          img.id = "avatar-img";
-          img.src = evt.target.result;
-          img.alt = "Foto de perfil";
-          img.className =
-            "w-28 h-28 rounded-full object-cover border-4 border-primary-500 cursor-pointer";
-          avatarWrapper.replaceChild(img, avatarImg);
-          avatarImg = img;
-        } else {
-          avatarImg.src = evt.target.result;
-        }
-      };
-      reader.readAsDataURL(file);
-    });
+  // Alternar entre modo edición / lectura
+  editarBtn.addEventListener("click", () => {
+    inputs.forEach(el => el.disabled = false);
+    editarBtn.classList.add("hidden");
+    guardarBtn.classList.remove("hidden");
+    document.querySelectorAll(".chip-input").forEach(el => el.classList.remove("hidden"));
   });
+
+  // Antes de enviar, habilitar todos los campos
+  form.addEventListener("submit", () => {
+    inputs.forEach(el => el.disabled = false);
+  });
+
+  // CHIPS setup
+  function configurarChips(containerId, inputId, hiddenId) {
+    const cont = document.getElementById(containerId);
+    const input = document.getElementById(inputId);
+    const hidden = document.getElementById(hiddenId);
+
+    cont.addEventListener("click", () => input.focus());
+    input.addEventListener("keydown", e => {
+      if (e.key === "Enter" && input.value.trim() !== "") {
+        e.preventDefault();
+        const chipText = input.value.trim();
+        const chip = document.createElement("span");
+        chip.className = "chip removable";
+        chip.textContent = chipText;
+        cont.insertBefore(chip, input);
+        input.value = "";
+        actualizarHidden();
+      }
+    });
+
+    cont.addEventListener("click", e => {
+      if (e.target.classList.contains("removable")) {
+        e.target.remove();
+        actualizarHidden();
+      }
+    });
+
+    function actualizarHidden() {
+      const chips = Array.from(cont.querySelectorAll(".chip")).map(c => c.textContent.replace("×", "").trim());
+      hidden.value = chips.join(", ");
+    }
+  }
+
+  configurarChips("chips-blandas", "input-blandas", "hidden-blandas");
+  configurarChips("chips-tecnicas", "input-tecnicas", "hidden-tecnicas");
+});
 </script>
 {% endblock %}

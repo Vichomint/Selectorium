@@ -1,5 +1,5 @@
-{% extends "layout_postulante.html" %} {% block title %}{{ vacante.titulo }} -
-Detalle{% endblock %} {% block main_content %}
+{% extends "layout_postulante.html" %} {% block title %}{{ vacante.titulo }}
+{%endblock %} {% block main_content %}
 <div class="bg-white shadow-md rounded-lg p-6">
   <h2 class="text-2xl font-bold text-primary-700 mb-4">{{ vacante.titulo }}</h2>
   <p class="text-gray-600 mb-4 whitespace-pre-line">
@@ -9,32 +9,30 @@ Detalle{% endblock %} {% block main_content %}
     <i class="fas fa-map-marker-alt mr-1"></i> {{ vacante.ubicacion }}
   </p>
 
-  <form method="post">
-    {% csrf_token %} {% for pregunta in preguntas %}
-    <div class="mb-4">
-      <label class="block font-semibold text-gray-700 mb-1"
-        >{{ pregunta.texto }}</label
-      >
-      <textarea
-        name="respuesta_{{ pregunta.id }}"
-        rows="2"
-        class="w-full border rounded-lg px-3 py-2 shadow focus:ring-2 focus:ring-primary-400"
-      ></textarea>
-    </div>
-    {% endfor %}
-    <button
-      type="submit"
-      class="bg-primary-500 hover:bg-primary-600 text-white font-bold py-2 px-6 rounded-lg transition"
-    >
-      Postular
-    </button>
-  </form>
-
-  <a
-    href="{% url 'listar_vacantes' %}"
-    class="ml-3 bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-2 px-6 rounded-lg transition"
+  {% if ya_postulado %}
+  <div
+    class="p-4 bg-blue-50 text-blue-700 border border-blue-200 rounded-lg mb-4"
   >
-    Volver
-  </a>
+    <i class="fas fa-check-circle mr-2"></i> Ya te has postulado a esta vacante.
+  </div>
+
+  <!-- Estado de la postulación -->
+  <div class="mb-4">
+    <span
+      class="px-3 py-1 rounded-full text-sm font-bold {% if postulacion.estado == 'enviado' %} bg-yellow-100 text-yellow-700 {% elif postulacion.estado == 'visto' %} bg-blue-100 text-blue-700 {% elif postulacion.estado == 'aceptado' %} bg-green-100 text-green-700 {% elif postulacion.estado == 'rechazado' %} bg-red-100 text-red-700 {% endif %}"
+    >
+      {{ postulacion.get_estado_display }}
+    </span>
+  </div>
+  {% else %}
+  <form method="post">
+    {% csrf_token %}
+    <button type="submit" class="btn-primary">Postular</button>
+  </form>
+  {% endif %}
+
+  <div class="mt-4">
+    <a href="{% url 'listar_vacantes' %}" class="btn-secondary">Volver</a>
+  </div>
 </div>
 {% endblock %}

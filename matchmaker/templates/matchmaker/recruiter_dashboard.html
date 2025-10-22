@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <title>Resultados para: {{ job.titulo }}</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+  </head>
+  <body class="bg-gray-50 p-8">
+    <h1 class="text-3xl font-bold text-gray-800 mb-6">
+      Resultados para: {{ job.titulo }}
+    </h1>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      {% for m in matches %}
+      <div
+        class="bg-white rounded-2xl shadow hover:shadow-lg transition border border-gray-200 p-6"
+      >
+        <div class="flex items-center justify-between mb-2">
+          <h2 class="text-lg font-semibold text-blue-700">
+            {{ m.candidate.nombre }}
+          </h2>
+          <span class="text-sm bg-blue-100 text-blue-800 px-2 py-1 rounded">
+            {{ m.score }}%
+          </span>
+        </div>
+
+        {% if m.candidate.profile.rol %}
+        <p class="text-gray-600 text-sm mb-1">
+          <strong>Rol detectado:</strong> {{ m.candidate.profile.rol }}
+        </p>
+        {% endif %}
+
+        <p class="text-gray-600 text-sm mb-3">
+          <strong>Idiomas:</strong>
+          {{ m.candidate.profile.idiomas|join:", " }}
+        </p>
+
+        <p class="text-gray-700 text-sm">
+          <strong>Skills detectadas:</strong>
+          {{ m.skills_match|join:", " }}
+        </p>
+
+        <div class="mt-4 flex justify-end">
+          <a
+            href="{{ m.candidate.cv_file.url }}"
+            class="text-blue-600 hover:underline text-sm"
+            target="_blank"
+          >
+            📄 Ver CV
+          </a>
+        </div>
+      </div>
+      {% empty %}
+      <p>No hay candidatos disponibles para este cargo.</p>
+      {% endfor %}
+    </div>
+  </body>
+</html>

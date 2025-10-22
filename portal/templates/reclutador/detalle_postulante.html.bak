@@ -1,0 +1,77 @@
+{% extends "layout_reclutador.html" %} {% block title %}Detalle del Postulante
+{%endblock %} {% block main_content %}
+<div class="bg-white shadow-md rounded-lg p-6">
+  <h2 class="text-2xl font-bold text-primary-700 mb-4">
+    {{ postulacion.postulante.username }}
+  </h2>
+
+  <p class="text-gray-500 text-sm mb-2">
+    <i class="fas fa-briefcase mr-1"></i> {{ postulacion.vacante.titulo }}
+  </p>
+
+  <p class="text-sm text-gray-500 mb-6">
+    Estado actual:
+    <span
+      class="px-3 py-1 rounded-full text-sm font-bold {% if postulacion.estado == 'enviado' %} bg-yellow-100 text-yellow-700 {% elif postulacion.estado == 'visto' %} bg-blue-100 text-blue-700 {% elif postulacion.estado == 'aceptado' %} bg-green-100 text-green-700 {% elif postulacion.estado == 'rechazado' %} bg-red-100 text-red-700 {% endif %}"
+    >
+      {{ postulacion.get_estado_display }}
+    </span>
+    {% if postulacion.fecha_visto %}
+    <span class="text-xs text-gray-500 ml-2"
+      >(visto el {{ postulacion.fecha_visto|date:"d/m/Y H:i" }})</span
+    >
+    {% endif %}
+  </p>
+
+  <hr class="my-4" />
+
+  <h3 class="text-lg font-semibold text-gray-800 mb-2">
+    Respuestas del postulante
+  </h3>
+  {% if respuestas %}
+  <ul class="space-y-2">
+    {% for respuesta in respuestas %}
+    <li class="bg-gray-50 border rounded-lg p-3">
+      <p class="font-semibold">{{ respuesta.pregunta.texto }}</p>
+      <p class="text-gray-700 whitespace-pre-line">{{ respuesta.texto }}</p>
+    </li>
+    {% endfor %}
+  </ul>
+  {% else %}
+  <p class="text-gray-500">
+    Este postulante no respondió preguntas adicionales.
+  </p>
+  {% endif %}
+
+  <hr class="my-4" />
+
+  {% if perfil %}
+  <h3 class="text-lg font-semibold text-gray-800 mb-2">
+    Perfil del postulante
+  </h3>
+  <p><strong>Correo:</strong> {{ perfil.user.email }}</p>
+  {% if perfil.estudios %}
+  <p><strong>Estudios:</strong> {{ perfil.estudios }}</p>
+  {% endif %} {% if perfil.experiencia %}
+  <p><strong>Experiencia:</strong> {{ perfil.experiencia }}</p>
+  {% endif %} {% if perfil.cv %}
+  <p>
+    <a
+      href="{{ perfil.cv.url }}"
+      class="text-primary-600 hover:underline"
+      target="_blank"
+      >Ver CV</a
+    >
+  </p>
+  {% endif %} {% endif %}
+
+  <div class="mt-6">
+    <a
+      href="{% url 'administrar_vacante' postulacion.vacante.id %}"
+      class="btn-secondary"
+      >Volver</a
+    >
+  </div>
+</div>
+{% endblock %}
+

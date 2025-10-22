@@ -32,6 +32,18 @@
     <p class="text-gray-600 text-sm mb-4 line-clamp-3">
       {{ postulacion.vacante.descripcion|truncatewords:40 }}
     </p>
+    {% if postulacion.match_label %}
+    <p class="text-sm font-semibold mb-4">
+      Match con tu perfil:
+      <span class="
+        {% if postulacion.match_label == 'Muy apto' %} text-green-700 {%
+        elif postulacion.match_label == 'Apto' %} text-emerald-700 {%
+        elif postulacion.match_label == 'Poco apto' %} text-yellow-700 {%
+        else %} text-gray-600 {% endif %}">
+        {{ postulacion.match_label }}
+      </span>
+    </p>
+    {% endif %}
 
     <!-- Botones -->
     <div class="flex space-x-3">

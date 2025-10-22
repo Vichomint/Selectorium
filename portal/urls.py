@@ -30,6 +30,7 @@ urlpatterns = [
     path("reclutador/vacantes/", views.reclutador_vacantes, name="reclutador_vacantes"),
     path("reclutador/vacantes/crear/", views.crear_vacante, name="crear_vacante"),
     path("reclutador/vacantes/<int:vacante_id>/", views.administrar_vacante, name="administrar_vacante"),
+    path("reclutador/vacantes/<int:vacante_id>/cerrar/", views.cerrar_vacante, name="cerrar_vacante"),
     path("reclutador/postulante/<int:postulante_id>/", views.perfil_postulante_detalle, name="perfil_postulante_detalle"),
     path(
     "reclutador/vacantes/<int:vacante_id>/postulante/<int:postulacion_id>/",

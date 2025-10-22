@@ -1,10 +1,81 @@
-{% extends "layout_reclutador.html" %} {% block title %}Estadísticas
-{%endblock%} {% block main_content %}
+﻿{% extends "layout_reclutador.html" %}
+{% block title %}Estadísticas{% endblock %}
+{% block main_content %}
 <h2 class="text-2xl font-bold text-primary-700 mb-6">
   <i class="fas fa-chart-line mr-2"></i> Estadísticas
-</h2>
+  </h2>
 
-<p class="text-gray-600">
-  Aquí podrás ver gráficos e informes de tus vacantes y postulantes.
-</p>
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+  <div class="bg-white shadow rounded-lg p-4">
+    <h3 class="text-lg font-semibold text-gray-800 mb-3">Postulaciones por vacante</h3>
+    <div class="relative h-64">
+      <canvas id="chartPostulaciones" class="absolute inset-0 w-full h-full"></canvas>
+    </div>
+  </div>
+  <div class="bg-white shadow rounded-lg p-4">
+    <h3 class="text-lg font-semibold text-gray-800 mb-3">Candidatos aptos por vacante</h3>
+    <div class="relative h-64">
+      <canvas id="chartAptos" class="absolute inset-0 w-full h-full"></canvas>
+    </div>
+  </div>
+  <div class="bg-white shadow rounded-lg p-4 lg:col-span-2">
+    <h3 class="text-lg font-semibold text-gray-800 mb-3">Comparativa total</h3>
+    <div class="relative h-72">
+      <canvas id="chartStacked" class="absolute inset-0 w-full h-full"></canvas>
+    </div>
+  </div>
+  </div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+  const labels = {{ chart_labels|safe }};
+  const dataPost = {{ chart_postulaciones|safe }};
+  const dataAptos = {{ chart_aptos|safe }};
+
+  const ctx1 = document.getElementById('chartPostulaciones');
+  new Chart(ctx1, {
+    type: 'bar',
+    data: {
+      labels,
+      datasets: [{
+        label: 'Postulaciones',
+        data: dataPost,
+        backgroundColor: 'rgba(37, 99, 235, 0.6)'
+      }]
+    },
+    options: { responsive: true, maintainAspectRatio: false }
+  });
+
+  const ctx2 = document.getElementById('chartAptos');
+  new Chart(ctx2, {
+    type: 'bar',
+    data: {
+      labels,
+      datasets: [{
+        label: 'Aptos (score ≥ 40)',
+        data: dataAptos,
+        backgroundColor: 'rgba(16, 185, 129, 0.6)'
+      }]
+    },
+    options: { responsive: true, maintainAspectRatio: false }
+  });
+
+  const ctx3 = document.getElementById('chartStacked');
+  const dataNoAptos = dataPost.map((v, i) => Math.max(0, (v || 0) - (dataAptos[i] || 0)));
+  new Chart(ctx3, {
+    type: 'bar',
+    data: {
+      labels,
+      datasets: [
+        { label: 'Aptos', data: dataAptos, backgroundColor: 'rgba(16,185,129,0.7)' },
+        { label: 'No aptos', data: dataNoAptos, backgroundColor: 'rgba(229,231,235,0.9)' }
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      scales: { x: { stacked: true }, y: { stacked: true, beginAtZero: true } }
+    }
+  });
+</script>
 {% endblock %}

@@ -5,6 +5,14 @@ from django.contrib.auth.decorators import login_required
 from .models import Profile , Vacante, Postulacion,Pregunta,Respuesta
 from django.utils import timezone
 from django.contrib import messages
+import logging
+from matchmaker.utils_extraction import extract_text_from_pdf, build_profile_from_text
+from matchmaker.utils_matching import calculate_match_score
+from matchmaker.skills_dictionary import SKILL_DICTIONARY
+import re
+import json
+from matchmaker.skills_dictionary import SKILL_DICTIONARY
+import re
 
 # LOGIN
 def login_view(request):
@@ -67,6 +75,20 @@ def perfil_postulante(request):
             perfil.foto = request.FILES["foto"]
         if "cv" in request.FILES:
             perfil.cv = request.FILES["cv"]
+            # Guardamos primero para asegurar el archivo en disco
+            try:
+                perfil.save()
+                # Extraer texto del CV y generar perfil automático
+                text = extract_text_from_pdf(perfil.cv.path)
+                profile_data = build_profile_from_text(text)
+                # Persistir habilidades técnicas y rol sugerido
+                perfil.habilidades_tecnicas = ", ".join(profile_data.get("skills", []))
+                if not perfil.area_profesional:
+                    perfil.area_profesional = profile_data.get("rol")
+                perfil.save()
+            except Exception as e:
+                logging.getLogger(__name__).exception("Error extrayendo skills del CV")
+                errores.append("No se pudo procesar el CV para extraer habilidades.")
 
         # Validaciones obligatorias
         if not perfil.cv:
@@ -104,11 +126,105 @@ def perfil_postulante(request):
 # Reclutador
 @login_required
 def reclutador_dashboard(request):
-    return render(request, "reclutador/dashboard.html")
+    # Resumen
+    vacantes_activas = Vacante.objects.filter(reclutador=request.user, activa=True).order_by("-fecha_publicacion")
+    total_activas = vacantes_activas.count()
+
+    postulaciones_no_vistas = Postulacion.objects.select_related("vacante", "postulante").filter(
+        vacante__reclutador=request.user, estado="enviado"
+    ).order_by("-fecha_postulacion")
+    total_no_vistas = postulaciones_no_vistas.count()
+
+    # Últimas 3 vacantes abiertas con métricas
+    ultimas_vacantes = []
+    for v in vacantes_activas[:3]:
+        qs = Postulacion.objects.filter(vacante=v)
+        total = qs.count()
+        aptos = 0
+        for p in qs.select_related("postulante"):
+            perfil_post = getattr(p.postulante, "profile", None)
+            if not perfil_post:
+                continue
+            cv_text = (perfil_post.habilidades_tecnicas or "")
+            cv_skills = [s.strip() for s in cv_text.split(",") if s.strip()]
+            if not cv_skills:
+                continue
+            try:
+                score = calculate_match_score(cv_skills=cv_skills, job_description=v.descripcion or "", skills_obligatorias=[], skills_deseables=[])
+                if score is not None and float(score) >= 40.0:
+                    aptos += 1
+            except Exception:
+                pass
+        ultimas_vacantes.append({
+            "obj": v,
+            "postulaciones": total,
+            "aptos": aptos,
+        })
+
+    # Skills más demandadas en las vacantes activas (diccionario)
+    skill_counts = {}
+    skills_flat = sum(SKILL_DICTIONARY.values(), [])
+    for v in vacantes_activas:
+        desc = v.descripcion or ""
+        for s in skills_flat:
+            if re.search(rf"\b{re.escape(s)}\b", desc, re.I):
+                skill_counts[s] = skill_counts.get(s, 0) + 1
+    top_skills = sorted(skill_counts.items(), key=lambda x: x[1], reverse=True)[:10]
+
+    context = {
+        "total_activas": total_activas,
+        "total_no_vistas": total_no_vistas,
+        "postulaciones_no_vistas": postulaciones_no_vistas[:5],
+        "ultimas_vacantes": ultimas_vacantes,
+        "top_skills": [k for k, _ in top_skills],
+    }
+    return render(request, "reclutador/dashboard.html", context)
 
 @login_required
 def reclutador_estadisticas(request):
-    return render(request, "reclutador/estadisticas.html")
+    # Vacantes del reclutador
+    vacantes = Vacante.objects.filter(reclutador=request.user).order_by("-fecha_publicacion")
+
+    labels = []
+    postulaciones_counts = []
+    aptos_counts = []
+
+    for v in vacantes:
+        labels.append(v.titulo)
+        qs = Postulacion.objects.filter(vacante=v)
+        postulaciones_counts.append(qs.count())
+
+        # Contar aptos (Apto o Muy apto => score >= 40)
+        aptos = 0
+        for p in qs.select_related("postulante"):
+            perfil_post = getattr(p.postulante, "profile", None)
+            if not perfil_post:
+                continue
+            cv_text = (perfil_post.habilidades_tecnicas or "").strip()
+            if not cv_text:
+                continue
+            cv_skills = [s.strip() for s in cv_text.split(",") if s.strip()]
+            if not cv_skills:
+                continue
+            try:
+                score = calculate_match_score(
+                    cv_skills=cv_skills,
+                    job_description=v.descripcion or "",
+                    skills_obligatorias=[],
+                    skills_deseables=[],
+                )
+                if score is not None and float(score) >= 40.0:
+                    aptos += 1
+            except Exception:
+                pass
+        aptos_counts.append(aptos)
+
+    context = {
+        "chart_labels": json.dumps(labels, ensure_ascii=False),
+        "chart_postulaciones": json.dumps(postulaciones_counts),
+        "chart_aptos": json.dumps(aptos_counts),
+    }
+    return render(request, "reclutador/estadisticas.html", context)
 
 # Postulación a vacante
 @login_required
@@ -126,7 +242,42 @@ def postulante_dashboard(request):
 # Mis Postulaciones
 @login_required
 def mis_postulaciones(request):
-    return render(request, "postulante/mis_postulaciones.html")
+    postulaciones = Postulacion.objects.filter(postulante=request.user).select_related("vacante")
+    # Obtener habilidades procesadas desde el perfil
+    perfil = Profile.objects.filter(user=request.user).first()
+    cv_skills = []
+    if perfil and (perfil.habilidades_tecnicas or "").strip():
+        cv_skills = [s.strip() for s in perfil.habilidades_tecnicas.split(",") if s.strip()]
+
+    # Calcular score de match para cada postulación
+    for p in postulaciones:
+        try:
+            p.match_score = calculate_match_score(
+                cv_skills=cv_skills,
+                job_description=p.vacante.descripcion or "",
+                skills_obligatorias=[],
+                skills_deseables=[],
+            ) if cv_skills else None
+        except Exception:
+            p.match_score = None
+
+        # Mapear a etiqueta cualitativa
+        def _to_label(score):
+            if score is None:
+                return None
+            # Normalizar negativas a 0 para evitar "-x%"
+            s = max(0.0, float(score))
+            if s >= 70:
+                return "Muy apto"
+            if s >= 40:
+                return "Apto"
+            if s >= 15:
+                return "Poco apto"
+            return "No apto"
+
+        p.match_label = _to_label(p.match_score)
+
+    return render(request, "postulante/mis_postulaciones.html", {"postulaciones": postulaciones})
 
 
 # Configuración
@@ -138,9 +289,7 @@ def configuracion_postulante(request):
         pass
     return render(request, "postulante/configuracion.html")
 
-@login_required
-def reclutador_dashboard(request):
-    return render(request, "reclutador/dashboard.html")
+ 
 
 @login_required
 def reclutador_vacantes(request):
@@ -163,10 +312,6 @@ def reclutador_postulantes(request):
         'postulaciones': postulaciones
     })
 
-
-@login_required
-def reclutador_estadisticas(request):
-    return render(request, "reclutador/estadisticas.html")
 
 @login_required
 def reclutador_configuracion(request):
@@ -275,10 +420,68 @@ def administrar_vacante(request, vacante_id):
             postulacion.save()
         return redirect("administrar_vacante", vacante_id=vacante.id)
 
+    # Calcular etiqueta de match y chips de skills para previsualizar en la lista
+    skills_flat = sum(SKILL_DICTIONARY.values(), [])
+    for p in postulaciones:
+        perfil_post = getattr(p.postulante, "profile", None)
+        cv_skills = []
+        if perfil_post and (perfil_post.habilidades_tecnicas or "").strip():
+            cv_skills = [s.strip() for s in perfil_post.habilidades_tecnicas.split(",") if s.strip()]
+        p.match_label = None
+        p.matched_skills = []
+        if cv_skills:
+            try:
+                score = calculate_match_score(
+                    cv_skills=cv_skills,
+                    job_description=vacante.descripcion or "",
+                    skills_obligatorias=[],
+                    skills_deseables=[],
+                )
+                s = max(0.0, float(score))
+                if s >= 70:
+                    p.match_label = "Muy apto"
+                elif s >= 40:
+                    p.match_label = "Apto"
+                elif s >= 15:
+                    p.match_label = "Poco apto"
+                else:
+                    p.match_label = "No apto"
+            except Exception:
+                p.match_label = None
+
+            # Skills que coinciden (según diccionario y descripción)
+            try:
+                desc = (vacante.descripcion or "")
+                found_job = [s for s in skills_flat if re.search(rf"\b{re.escape(s)}\b", desc, re.I)]
+                # Detectar skills en el texto del CV (cadena completa), no solo por split
+                cv_text = perfil_post.habilidades_tecnicas or ""
+                found_cv = [s for s in skills_flat if re.search(rf"\b{re.escape(s)}\b", cv_text, re.I)]
+                # Intersección
+                cv_set = {s.lower() for s in found_cv}
+                overlap = [s for s in found_job if s.lower() in cv_set]
+                if overlap:
+                    p.matched_skills = overlap[:6]
+                elif found_cv:
+                    p.matched_skills = found_cv[:6]
+                else:
+                    p.matched_skills = found_job[:6]
+            except Exception:
+                p.matched_skills = []
+
     return render(request, "reclutador/administrar_vacante.html", {
         "vacante": vacante,
         "postulaciones": postulaciones,
     })
+
+@login_required
+def cerrar_vacante(request, vacante_id):
+    vacante = get_object_or_404(Vacante, id=vacante_id, reclutador=request.user)
+    if request.method == "POST":
+        vacante.activa = False
+        vacante.save()
+        messages.success(request, "Vacante cerrada correctamente.")
+        return redirect("reclutador_dashboard")
+    return redirect("administrar_vacante", vacante_id=vacante.id)
 
 
 
@@ -313,11 +516,7 @@ def perfil_borrar_foto(request):
     return redirect("perfil_postulante")
 
 
-@login_required
-def mis_postulaciones(request):
-    postulaciones = Postulacion.objects.filter(postulante=request.user).select_related("vacante")
-    return render(request, "postulante/mis_postulaciones.html", {"postulaciones": postulaciones})
-
+ 
 @login_required
 def detalle_postulante(request, vacante_id, postulacion_id):
     postulacion = get_object_or_404(Postulacion, id=postulacion_id, vacante__id=vacante_id, vacante__reclutador=request.user)
@@ -332,8 +531,39 @@ def detalle_postulante(request, vacante_id, postulacion_id):
     perfil = getattr(postulacion.postulante, "profile", None)
     respuestas = postulacion.respuestas.select_related("pregunta").all() if hasattr(postulacion, "respuestas") else []
 
+    # Calcular match del postulante con la vacante (usando skills del perfil)
+    match_score = None
+    match_label = None
+    top_skills = []
+    if perfil and (perfil.habilidades_tecnicas or "").strip():
+        cv_skills = [s.strip() for s in perfil.habilidades_tecnicas.split(",") if s.strip()]
+        try:
+            match_score = calculate_match_score(
+                cv_skills=cv_skills,
+                job_description=postulacion.vacante.descripcion or "",
+                skills_obligatorias=[],
+                skills_deseables=[],
+            )
+        except Exception:
+            match_score = None
+        # Etiqueta cualitativa
+        if match_score is not None:
+            s = max(0.0, float(match_score))
+            if s >= 70:
+                match_label = "Muy apto"
+            elif s >= 40:
+                match_label = "Apto"
+            elif s >= 15:
+                match_label = "Poco apto"
+            else:
+                match_label = "No apto"
+        top_skills = cv_skills[:10]
+
     return render(request, "reclutador/detalle_postulante.html", {
         "postulacion": postulacion,
         "perfil": perfil,
         "respuestas": respuestas,
+        "match_score": match_score,
+        "match_label": match_label,
+        "top_skills": top_skills,
     })

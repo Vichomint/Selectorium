@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <title>Subir CV</title>
+  </head>
+  <body>
+    <h1>Subir CV para análisis</h1>
+    <form
+      action="/matchmaker/upload-cv/"
+      method="post"
+      enctype="multipart/form-data"
+    >
+      {% csrf_token %}
+      <input
+        type="text"
+        name="nombre"
+        placeholder="Nombre del postulante"
+      /><br /><br />
+      <input type="file" name="cv" accept="application/pdf" /><br /><br />
+      <button type="submit">Subir CV</button>
+    </form>
+  </body>
+</html>

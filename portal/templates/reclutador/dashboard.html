@@ -1,21 +1,81 @@
-{% extends "layout_reclutador.html" %} {% block title %}Dashboard
-Reclutador{%endblock %} {% block main_content %}
+{% extends "layout_reclutador.html" %}
+{% block title %}Dashboard Reclutador{% endblock %}
+{% block main_content %}
 <h2 class="text-2xl font-bold text-primary-700 mb-6">
   <i class="fas fa-home mr-2"></i> Dashboard
 </h2>
 
-<div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+<!-- KPIs -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
   <div class="bg-white shadow-md rounded-lg p-6 text-center">
-    <h3 class="text-lg font-semibold text-gray-700">Vacantes Activas</h3>
-    <p class="text-3xl font-bold text-primary-600">12</p>
+    <h3 class="text-lg font-semibold text-gray-700">Vacantes activas</h3>
+    <p class="text-3xl font-bold text-primary-600">{{ total_activas }}</p>
   </div>
   <div class="bg-white shadow-md rounded-lg p-6 text-center">
-    <h3 class="text-lg font-semibold text-gray-700">Postulantes</h3>
-    <p class="text-3xl font-bold text-primary-600">87</p>
+    <h3 class="text-lg font-semibold text-gray-700">Postulaciones no vistas</h3>
+    <p class="text-3xl font-bold text-primary-600">{{ total_no_vistas }}</p>
   </div>
   <div class="bg-white shadow-md rounded-lg p-6 text-center">
-    <h3 class="text-lg font-semibold text-gray-700">Entrevistas Pendientes</h3>
-    <p class="text-3xl font-bold text-primary-600">5</p>
+    <h3 class="text-lg font-semibold text-gray-700">Skills más demandadas</h3>
+    <div class="mt-2 flex flex-wrap gap-1 justify-center">
+      {% for s in top_skills %}
+      <span class="px-2 py-0.5 text-xs rounded bg-gray-100 text-gray-700">{{ s }}</span>
+      {% empty %}
+      <span class="text-sm text-gray-500">Sin datos</span>
+      {% endfor %}
+    </div>
   </div>
 </div>
+
+<!-- Postulaciones no vistas -->
+<div class="bg-white shadow rounded-lg p-6 mb-6">
+  <h3 class="text-lg font-semibold text-gray-800 mb-4">Postulaciones no vistas</h3>
+  {% if postulaciones_no_vistas %}
+  <ul class="divide-y">
+    {% for p in postulaciones_no_vistas %}
+    <li class="py-3 flex items-center justify-between">
+      <div>
+        <p class="font-semibold text-primary-700">{{ p.postulante.username }}</p>
+        <p class="text-sm text-gray-600">{{ p.vacante.titulo }} · {{ p.fecha_postulacion|date:"d/m/Y H:i" }}</p>
+      </div>
+      <a href="{% url 'detalle_postulante' p.vacante.id p.id %}" class="btn-primary text-sm">Revisar</a>
+    </li>
+    {% endfor %}
+  </ul>
+  {% else %}
+  <p class="text-gray-500">No hay postulaciones pendientes de revisión.</p>
+  {% endif %}
+</div>
+
+<!-- Últimas vacantes abiertas -->
+<div class="bg-white shadow rounded-lg p-6 mb-6">
+  <div class="flex items-center justify-between mb-4">
+    <h3 class="text-lg font-semibold text-gray-800">Tus últimas 3 vacantes abiertas</h3>
+    <a href="{% url 'reclutador_vacantes' %}" class="text-primary-600 hover:underline text-sm">Ver todas</a>
+  </div>
+  {% if ultimas_vacantes %}
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+    {% for v in ultimas_vacantes %}
+    <div class="border rounded-lg p-4">
+      <h4 class="font-semibold text-primary-700">{{ v.obj.titulo }}</h4>
+      <p class="text-sm text-gray-600 line-clamp-3 mb-2">{{ v.obj.descripcion }}</p>
+      <p class="text-sm text-gray-700 mb-1">Postulaciones: <strong>{{ v.postulaciones }}</strong></p>
+      <p class="text-sm text-gray-700 mb-3">Aptos: <strong>{{ v.aptos }}</strong></p>
+      <div class="flex gap-2">
+        <a href="{% url 'administrar_vacante' v.obj.id %}" class="btn-primary btn-sm">Administrar</a>
+        {% if v.obj.activa %}
+        <form method="post" action="{% url 'cerrar_vacante' v.obj.id %}">
+          {% csrf_token %}
+          <button type="submit" class="btn-danger btn-sm">Cerrar vacante</button>
+        </form>
+        {% endif %}
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  {% else %}
+  <p class="text-gray-500">No tienes vacantes abiertas.</p>
+  {% endif %}
+</div>
+
 {% endblock %}

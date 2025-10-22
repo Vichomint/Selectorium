@@ -20,4 +20,4 @@ def explicar_match(job_text, cv_text):
     explanation = f"Palabras clave comunes: {', '.join(common_keywords)}"
     return explanation
 # Ejemplo de uso:
-# job_desc = "Se busca desarrollador Python con experiencia en Django y REST."  
+# job_desc = "Se busca desarrollador Python con experiencia en Django y REST."

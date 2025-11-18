@@ -34,6 +34,7 @@ class Profile(models.Model):
     # Datos personales
     fecha_nacimiento = models.DateField(null=True, blank=True)
     foto = models.ImageField(upload_to="fotos_postulantes/", blank=True, null=True)
+    portada = models.ImageField(upload_to="portadas_postulantes/", blank=True, null=True)
     cv = models.FileField(upload_to="cvs/", blank=True, null=True)
 
     # Perfil profesional
@@ -72,10 +73,20 @@ class Postulacion(models.Model):
         ("rechazado", "Rechazado"),
     )
 
+    ETAPAS_PROCESO = (
+        ("sin_avance", "Sin avance"),
+        ("descartado", "Descartado"),
+        ("entrevista_rrhh", "Entrevista con RRHH"),
+        ("entrevista_area", "Entrevista con jefe de area"),
+        ("oferta", "Oferta extendida"),
+        ("contratado", "Contratado"),
+    )
+
     postulante = models.ForeignKey(User, on_delete=models.CASCADE, related_name="postulaciones")
     vacante = models.ForeignKey(Vacante, on_delete=models.CASCADE, related_name="postulaciones")
     fecha_postulacion = models.DateTimeField(auto_now_add=True)
     estado = models.CharField(max_length=20, choices=ESTADOS, default="enviado")
+    etapa_proceso = models.CharField(max_length=30, choices=ETAPAS_PROCESO, default="sin_avance")
 
     def __str__(self):
         return f"{self.postulante.username} → {self.vacante.titulo} ({self.estado})"

@@ -1,5 +1,6 @@
-﻿{% extends "layout_reclutador.html" %} {% block title %}Administrar Vacante
-{%endblock %} {% block main_content %}
+{% extends "layout_reclutador.html" %}
+{% block title %}Administrar Vacante{% endblock %}
+{% block main_content %}
 <h2 class="text-2xl font-bold text-primary-700 mb-6">
   <i class="fas fa-briefcase mr-2"></i> {{ vacante.titulo }}
 </h2>
@@ -13,7 +14,10 @@
   {% for postulacion in postulaciones %}
   {% with perfil=postulacion.postulante.profile %}
   <div class="bg-white rounded-2xl shadow overflow-hidden group">
-    <div class="h-20 bg-gradient-to-r from-primary-500 to-primary-700"></div>
+    <div
+      class="h-20 w-full {% if perfil and perfil.portada %}bg-cover bg-center{% else %}bg-gradient-to-r from-primary-500 to-primary-700{% endif %}"
+      {% if perfil and perfil.portada %}style="background-image: url('{{ perfil.portada.url }}');"{% endif %}
+    ></div>
     <div class="p-5 pt-0">
       <div class="-mt-10 mb-3">
         {% if perfil and perfil.foto %}
@@ -25,16 +29,23 @@
         {% endif %}
       </div>
       <h4 class="text-lg font-semibold text-gray-900">{{ postulacion.postulante.username }}</h4>
-      <p class="text-sm text-gray-500">{{ perfil.area_profesional|default:"—" }}</p>
-      <div class="mt-2 flex items-center gap-2">
-        <span class="px-2 py-0.5 rounded-full text-xs font-semibold {% if postulacion.estado == 'enviado' %} bg-yellow-100 text-yellow-700 {% elif postulacion.estado == 'visto' %} bg-blue-100 text-blue-700 {% elif postulacion.estado == 'aceptado' %} bg-green-100 text-green-700 {% elif postulacion.estado == 'rechazado' %} bg-red-100 text-red-700 {% endif %}">
+      <p class="text-sm text-gray-500">{{ perfil.area_profesional|default:"-" }}</p>
+      <div class="mt-2 flex flex-wrap items-center gap-2">
+        <span class="px-2 py-0.5 rounded-full text-xs font-semibold {% if postulacion.estado == 'enviado' %}bg-yellow-100 text-yellow-700{% elif postulacion.estado == 'visto' %}bg-blue-100 text-blue-700{% elif postulacion.estado == 'aceptado' %}bg-green-100 text-green-700{% elif postulacion.estado == 'rechazado' %}bg-red-100 text-red-700{% else %}bg-gray-100 text-gray-700{% endif %}">
           {{ postulacion.get_estado_display }}
         </span>
+        <span class="px-2 py-0.5 rounded-full text-xs font-semibold bg-slate-100 text-slate-700">
+          {{ postulacion.etapa_display }}
+        </span>
         {% if postulacion.match_label %}
-        <span class="px-2 py-0.5 rounded-full text-xs font-semibold {% if postulacion.match_label == 'Muy apto' %} bg-green-100 text-green-700 {% elif postulacion.match_label == 'Apto' %} bg-emerald-100 text-emerald-700 {% elif postulacion.match_label == 'Poco apto' %} bg-yellow-100 text-yellow-700 {% else %} bg-gray-100 text-gray-700 {% endif %}">{{ postulacion.match_label }}</span>
+        <span class="px-2 py-0.5 rounded-full text-xs font-semibold {% if postulacion.match_label == 'Muy apto' %}bg-green-100 text-green-700{% elif postulacion.match_label == 'Apto' %}bg-emerald-100 text-emerald-700{% elif postulacion.match_label == 'Poco apto' %}bg-yellow-100 text-yellow-700{% else %}bg-gray-100 text-gray-700{% endif %}">
+          {{ postulacion.match_label }}
+        </span>
         {% endif %}
       </div>
-      <p class="text-xs text-gray-500 mt-1">Postulado el {{ postulacion.fecha_postulacion|date:"d/m/Y H:i" }} · Exp: {{ perfil.anios_experiencia|default:"N/A" }} años</p>
+      <p class="text-xs text-gray-500 mt-1">
+        Postulado el {{ postulacion.fecha_postulacion|date:"d/m/Y H:i" }} · Exp: {{ perfil.anios_experiencia|default:"N/A" }} años
+      </p>
       {% if postulacion.matched_skills %}
       <div class="mt-3 flex flex-wrap gap-1">
         {% for s in postulacion.matched_skills %}
@@ -59,8 +70,9 @@
   </div>
   {% endwith %}
   {% endfor %}
-</div>{% else %}
-<p class="text-gray-500">AÃºn no hay postulantes para esta vacante.</p>
+</div>
+{% else %}
+<p class="text-gray-500">Aun no hay postulantes para esta vacante.</p>
 {% endif %}
 
 <div class="mt-6">

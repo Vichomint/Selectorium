@@ -1,5 +1,9 @@
-{% extends "base.html" %} {% load static %} {% block title %}Panel Postulante -
-Selectorium{% endblock %} {% block content %}
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Panel Postulante - Selectorium{% endblock %}
+
+{% block content %}
 <div class="flex h-screen">
   <!-- Overlay (solo móvil) -->
   <div
@@ -20,6 +24,16 @@ Selectorium{% endblock %} {% block content %}
       />
     </div>
     <ul class="space-y-2">
+      <!-- Dashboard -->
+      <li>
+        <a
+          href="{% url 'postulante_dashboard' %}"
+          class="flex items-center p-2 rounded-lg font-medium hover:bg-primary-700 {% if request.resolver_match.url_name == 'postulante_dashboard' %}bg-primary-700{% endif %}"
+        >
+          <i class="fas fa-chart-line mr-3"></i> Dashboard
+        </a>
+      </li>
+
       <!-- Vacantes disponibles -->
       <li>
         <a
@@ -88,7 +102,7 @@ Selectorium{% endblock %} {% block content %}
 
     <!-- Main dinámico -->
     <main class="flex-1 p-6 overflow-y-auto">
-      {% block main_content %} {% endblock %}
+      {% block main_content %}{% endblock %}
     </main>
   </div>
 </div>

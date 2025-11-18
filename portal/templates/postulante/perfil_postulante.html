@@ -5,11 +5,10 @@
 
 {% block main_content %}
 
-<!-- ✅ Bloque de notificación tipo Toast -->
 {% if messages %}
   <div id="toast-container" class="fixed top-5 right-5 z-50 space-y-3">
     {% for message in messages %}
-      <div class="max-w-sm w-full backdrop-blur-md bg-white/80 border border-gray-200 rounded-xl shadow-lg p-4 flex items-start gap-3 transition transform duration-300"
+      <div class="max-w-sm w-full backdrop-blur-md bg-white/80 border border-gray-200 rounded-xl shadow-lg p-4 flex items-start gap-3 transition duration-300"
            x-data="{ visible: true }"
            x-show="visible"
            x-transition.opacity.out.duration.500ms
@@ -20,7 +19,7 @@
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
             </svg>
           </div>
-        {% elif message.tags == 'error' %}
+        {% else %}
           <div class="flex-shrink-0 text-red-500">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
@@ -43,154 +42,184 @@
   </div>
 {% endif %}
 
-<!-- ✅ Contenido principal -->
-<div class="bg-white shadow-md rounded-lg p-6 max-w-3xl mx-auto mt-6">
-
-  <!-- Imagen de perfil -->
-  <div class="flex flex-col items-center mb-6">
-    <div id="avatar-wrapper" class="relative">
-      {% if perfil.foto %}
-        <img id="avatar-img" src="{{ perfil.foto.url }}" alt="Foto de perfil"
-             class="w-28 h-28 rounded-full object-cover border-4 border-primary-500" />
-      {% else %}
-        <div id="avatar-img" class="w-28 h-28 flex items-center justify-center rounded-full bg-gray-200 text-gray-500 border-4 border-primary-500">
-          <i class="fas fa-user text-3xl"></i>
-        </div>
-      {% endif %}
-    </div>
-
-    <h2 class="mt-3 text-xl font-bold text-primary-700">{{ perfil.user.username }}</h2>
-    <p class="text-sm text-gray-500">{{ perfil.user.email }}</p>
-  </div>
-
-  {% if errores %}
-    <div class="bg-red-50 border border-red-200 text-red-700 p-3 mb-4 rounded-lg text-sm">
-      <ul class="list-disc list-inside">
-        {% for e in errores %}<li>{{ e }}</li>{% endfor %}
-      </ul>
-    </div>
-  {% endif %}
-
-  <form method="post" enctype="multipart/form-data" class="space-y-5" id="perfil-form">
+<div class="max-w-4xl mx-auto mt-6 bg-white shadow rounded-2xl overflow-hidden">
+  <form method="post" enctype="multipart/form-data" class="space-y-6" id="perfil-form">
     {% csrf_token %}
 
-    <!-- Datos personales -->
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-      <div>
-        <label class="block text-sm font-bold text-gray-700 mb-1">Fecha de nacimiento</label>
-        <input type="date" name="fecha_nacimiento" value="{{ perfil.fecha_nacimiento|date:'Y-m-d' }}"
-               class="form-input" disabled>
-      </div>
+    <div class="relative">
+      <div class="h-48 w-full {% if perfil.portada %}bg-cover bg-center{% else %}bg-gradient-to-r from-primary-500 to-primary-700{% endif %}"
+           {% if perfil.portada %}style="background-image: url('{{ perfil.portada.url }}');"{% endif %}></div>
+      <label class="absolute top-4 right-4 btn-secondary btn-sm cursor-pointer file-trigger pointer-events-none opacity-60"
+             data-file-trigger>
+        Cambiar portada
+        <input type="file" name="portada" accept="image/*" class="hidden file-input" disabled>
+      </label>
 
-      <div>
-        <label class="block text-sm font-bold text-gray-700 mb-1">Nivel educativo</label>
-        <select name="nivel_educacion" class="form-input" disabled>
-          <option value="">Seleccione...</option>
-          <option value="basica" {% if perfil.nivel_educacion == "basica" %}selected{% endif %}>Educación básica</option>
-          <option value="media" {% if perfil.nivel_educacion == "media" %}selected{% endif %}>Educación media</option>
-          <option value="tecnico" {% if perfil.nivel_educacion == "tecnico" %}selected{% endif %}>Técnico</option>
-          <option value="profesional" {% if perfil.nivel_educacion == "profesional" %}selected{% endif %}>Profesional</option>
-          <option value="postgrado" {% if perfil.nivel_educacion == "postgrado" %}selected{% endif %}>Postgrado / Magíster / Doctorado</option>
-        </select>
-      </div>
-
-      <div>
-        <label class="block text-sm font-bold text-gray-700 mb-1">Área profesional</label>
-        <input type="text" name="area_profesional" value="{{ perfil.area_profesional }}"
-               class="form-input" disabled>
-      </div>
-
-      <div>
-        <label class="block text-sm font-bold text-gray-700 mb-1">Años de experiencia</label>
-        <input type="number" name="anios_experiencia" value="{{ perfil.anios_experiencia }}"
-               class="form-input" disabled>
-      </div>
-
-      <div>
-        <label class="block text-sm font-bold text-gray-700 mb-1">Tipo de jornada</label>
-        <select name="tipo_jornada" class="form-input" disabled>
-          <option value="">Seleccione...</option>
-          <option value="completa" {% if perfil.tipo_jornada == "completa" %}selected{% endif %}>Jornada completa</option>
-          <option value="media" {% if perfil.tipo_jornada == "media" %}selected{% endif %}>Media jornada</option>
-          <option value="por_proyecto" {% if perfil.tipo_jornada == "por_proyecto" %}selected{% endif %}>Por proyecto / freelance</option>
-        </select>
-      </div>
-
-      <div>
-        <label class="block text-sm font-bold text-gray-700 mb-1">Pretensión de renta (CLP)</label>
-        <input type="text" name="pretension_renta" value="{{ perfil.pretension_renta }}"
-               class="form-input" disabled>
-      </div>
-
-      <div>
-        <label class="block text-sm font-bold text-gray-700 mb-1">Disponibilidad</label>
-        <select name="disponibilidad" class="form-input" disabled>
-          <option value="">Seleccione...</option>
-          <option value="inmediata" {% if perfil.disponibilidad == "inmediata" %}selected{% endif %}>Inmediata</option>
-          <option value="15_dias" {% if perfil.disponibilidad == "15_dias" %}selected{% endif %}>Dentro de 15 días</option>
-          <option value="30_dias" {% if perfil.disponibilidad == "30_dias" %}selected{% endif %}>Dentro de 30 días</option>
-          <option value="otros" {% if perfil.disponibilidad == "otros" %}selected{% endif %}>Otros</option>
-        </select>
-      </div>
-
-      <div class="flex items-center">
-        <input type="checkbox" name="movilidad" id="movilidad" {% if perfil.movilidad %}checked{% endif %}
-               class="h-4 w-4 text-primary-600 border-gray-300 rounded" disabled>
-        <label for="movilidad" class="ml-2 text-sm text-gray-700">Cuento con movilidad (auto propio)</label>
+      <div class="absolute left-6 -bottom-12 flex items-end gap-4">
+        {% if perfil.foto %}
+        <img id="avatar-img" src="{{ perfil.foto.url }}" alt="Foto de perfil"
+             class="w-24 h-24 rounded-full border-4 border-white shadow-lg object-cover">
+        {% else %}
+        <div id="avatar-img" class="w-24 h-24 rounded-full border-4 border-white shadow-lg bg-gray-200 flex items-center justify-center text-gray-500">
+          <i class="fas fa-user text-3xl"></i>
+        </div>
+        {% endif %}
+        <label class="btn-secondary btn-sm cursor-pointer file-trigger pointer-events-none opacity-60"
+               data-file-trigger>
+          Cambiar foto
+          <input type="file" name="foto" accept="image/*" class="hidden file-input" disabled>
+        </label>
       </div>
     </div>
 
-    <!-- CHIPS -->
-    <div>
-      <label class="block text-sm font-bold text-gray-700 mb-1">Habilidades blandas</label>
-      <div id="chips-blandas" class="flex flex-wrap gap-2 p-2 border rounded-lg min-h-[45px]">
-        {% for chip in habilidades_blandas %}
-          <span class="chip">{{ chip }}</span>
-        {% endfor %}
-        <input id="input-blandas" type="text" class="chip-input hidden" placeholder="Presione Enter para agregar" />
+    <div class="pt-16 px-6 pb-8 space-y-6">
+      <div>
+        <h2 class="text-2xl font-bold text-primary-700">{{ perfil.user.username }}</h2>
+        <p class="text-sm text-gray-500">{{ perfil.user.email }}</p>
       </div>
-      <input type="hidden" name="habilidades_blandas" id="hidden-blandas" value="{{ perfil.habilidades_blandas }}">
-    </div>
 
-    <div>
-      <label class="block text-sm font-bold text-gray-700 mb-1">Habilidades técnicas</label>
-      <div id="chips-tecnicas" class="flex flex-wrap gap-2 p-2 border rounded-lg min-h-[45px]">
-        {% for chip in habilidades_tecnicas %}
-          <span class="chip">{{ chip }}</span>
-        {% endfor %}
-        <input id="input-tecnicas" type="text" class="chip-input hidden" placeholder="Presione Enter para agregar" />
+      {% if errores %}
+      <div class="bg-red-50 border border-red-200 text-red-700 p-3 rounded-lg text-sm">
+        <ul class="list-disc list-inside">
+          {% for e in errores %}<li>{{ e }}</li>{% endfor %}
+        </ul>
       </div>
-      <input type="hidden" name="habilidades_tecnicas" id="hidden-tecnicas" value="{{ perfil.habilidades_tecnicas }}">
-    </div>
-
-    <!-- CV -->
-    <div>
-      <label class="block text-sm font-bold text-gray-700 mb-1">Currículum (PDF)</label>
-      {% if perfil.cv %}
-        <p class="text-sm text-gray-600 mb-1">Archivo cargado:
-          <a href="{{ perfil.cv.url }}" target="_blank" class="text-primary-600 hover:underline">Ver CV</a>
-        </p>
       {% endif %}
-      <input type="file" name="cv" accept=".pdf" class="form-input" disabled>
-    </div>
 
-    <!-- Botones -->
-    <div class="flex justify-end space-x-3">
-      <button type="button" id="editar-btn" class="btn-secondary">Editar perfil</button>
-      <button type="submit" id="guardar-btn" class="btn-primary hidden">Guardar cambios</button>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <label class="block text-sm font-semibold text-gray-700 mb-1">Fecha de nacimiento</label>
+          <input type="date" name="fecha_nacimiento" value="{{ perfil.fecha_nacimiento|date:'Y-m-d' }}" class="form-input" disabled>
+        </div>
+        <div>
+          <label class="block text-sm font-semibold text-gray-700 mb-1">Nivel educativo</label>
+          <select name="nivel_educacion" class="form-input" disabled>
+            <option value="">Seleccione...</option>
+            <option value="basica" {% if perfil.nivel_educacion == "basica" %}selected{% endif %}>Educación básica</option>
+            <option value="media" {% if perfil.nivel_educacion == "media" %}selected{% endif %}>Educación media</option>
+            <option value="tecnico" {% if perfil.nivel_educacion == "tecnico" %}selected{% endif %}>Técnico</option>
+            <option value="profesional" {% if perfil.nivel_educacion == "profesional" %}selected{% endif %}>Profesional</option>
+            <option value="postgrado" {% if perfil.nivel_educacion == "postgrado" %}selected{% endif %}>Postgrado / Magíster / Doctorado</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-sm font-semibold text-gray-700 mb-1">Área profesional</label>
+          <input type="text" name="area_profesional" value="{{ perfil.area_profesional }}" class="form-input" disabled>
+        </div>
+        <div>
+          <label class="block text-sm font-semibold text-gray-700 mb-1">Años de experiencia</label>
+          <input type="number" name="anios_experiencia" value="{{ perfil.anios_experiencia }}" class="form-input" disabled>
+        </div>
+        <div>
+          <label class="block text-sm font-semibold text-gray-700 mb-1">Tipo de jornada</label>
+          <select name="tipo_jornada" class="form-input" disabled>
+            <option value="">Seleccione...</option>
+            <option value="completa" {% if perfil.tipo_jornada == "completa" %}selected{% endif %}>Jornada completa</option>
+            <option value="media" {% if perfil.tipo_jornada == "media" %}selected{% endif %}>Media jornada</option>
+            <option value="por_proyecto" {% if perfil.tipo_jornada == "por_proyecto" %}selected{% endif %}>Por proyecto / freelance</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-sm font-semibold text-gray-700 mb-1">Pretensión de renta (CLP)</label>
+          <input type="text" name="pretension_renta" value="{{ perfil.pretension_renta }}" class="form-input" disabled>
+        </div>
+        <div>
+          <label class="block text-sm font-semibold text-gray-700 mb-1">Disponibilidad</label>
+          <select name="disponibilidad" class="form-input" disabled>
+            <option value="">Seleccione...</option>
+            <option value="inmediata" {% if perfil.disponibilidad == "inmediata" %}selected{% endif %}>Inmediata</option>
+            <option value="15_dias" {% if perfil.disponibilidad == "15_dias" %}selected{% endif %}>Dentro de 15 días</option>
+            <option value="30_dias" {% if perfil.disponibilidad == "30_dias" %}selected{% endif %}>Dentro de 30 días</option>
+            <option value="otros" {% if perfil.disponibilidad == "otros" %}selected{% endif %}>Otros</option>
+          </select>
+        </div>
+        <div class="flex items-center">
+          <input type="checkbox" name="movilidad" id="movilidad" {% if perfil.movilidad %}checked{% endif %} class="h-4 w-4 text-primary-600 border-gray-300 rounded" disabled>
+          <label for="movilidad" class="ml-2 text-sm text-gray-700">Cuento con movilidad (auto propio)</label>
+        </div>
+      </div>
+
+      <div>
+        <label class="block text-sm font-semibold text-gray-700 mb-1">Habilidades blandas</label>
+        <div id="chips-blandas" class="flex flex-wrap gap-2 p-2 border rounded-lg min-h-[45px]">
+          {% for chip in habilidades_blandas %}
+            <span class="chip">{{ chip }}</span>
+          {% endfor %}
+          <input id="input-blandas" type="text" class="chip-input hidden" placeholder="Presiona Enter para agregar">
+        </div>
+        <input type="hidden" name="habilidades_blandas" id="hidden-blandas" value="{{ perfil.habilidades_blandas }}">
+      </div>
+
+      <div>
+        <label class="block text-sm font-semibold text-gray-700 mb-1">Habilidades técnicas</label>
+        <div id="chips-tecnicas" class="flex flex-wrap gap-2 p-2 border rounded-lg min-h-[45px]">
+          {% for chip in habilidades_tecnicas %}
+            <span class="chip">{{ chip }}</span>
+          {% endfor %}
+          <input id="input-tecnicas" type="text" class="chip-input hidden" placeholder="Presiona Enter para agregar">
+        </div>
+        <input type="hidden" name="habilidades_tecnicas" id="hidden-tecnicas" value="{{ perfil.habilidades_tecnicas }}">
+      </div>
+
+      <div>
+        <label class="block text-sm font-semibold text-gray-700 mb-1">Currículum (PDF)</label>
+        {% if perfil.cv %}
+          <p class="text-sm text-gray-600 mb-1">
+            Archivo cargado:
+            <a href="{{ perfil.cv.url }}" target="_blank" class="text-primary-600 hover:underline">Ver CV</a>
+          </p>
+        {% endif %}
+        <input type="file" name="cv" accept=".pdf" class="form-input file-input" disabled>
+      </div>
+
+      <div class="flex justify-end gap-3">
+        <button type="button" id="editar-btn" class="btn-secondary">Editar perfil</button>
+        <button type="submit" id="guardar-btn" class="btn-primary hidden">Guardar cambios</button>
+      </div>
     </div>
   </form>
 </div>
 
-<!-- ✅ Estilos base -->
 <style>
-.chip { @apply bg-primary-100 text-primary-700 px-3 py-1 rounded-full text-sm font-medium cursor-default; }
-.chip.removable::after { content: "×"; margin-left: 6px; cursor: pointer; font-weight: bold; }
-.chip-input { @apply flex-grow border-none focus:ring-0 text-sm; }
-.form-input { @apply w-full border rounded-lg px-3 py-2 shadow focus:ring-2 focus:ring-primary-400; }
+  .chip {
+    display: inline-flex;
+    align-items: center;
+    background-color: #e0f2fe;
+    color: #0369a1;
+    padding: 0.25rem 0.75rem;
+    border-radius: 9999px;
+    font-size: 0.875rem;
+    font-weight: 500;
+  }
+  .chip.removable::after {
+    content: "×";
+    margin-left: 6px;
+    cursor: pointer;
+    font-weight: bold;
+  }
+  .chip-input {
+    border: none;
+    outline: none;
+    min-width: 140px;
+    font-size: 0.875rem;
+  }
+  .form-input {
+    width: 100%;
+    border: 1px solid #d1d5db;
+    border-radius: 0.75rem;
+    padding: 0.5rem 0.75rem;
+    transition: box-shadow 0.2s ease, border-color 0.2s ease;
+  }
+  .form-input:focus {
+    border-color: #2563eb;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.2);
+    outline: none;
+  }
+  .file-trigger.pointer-events-none {
+    pointer-events: none;
+  }
 </style>
 
-<!-- ✅ Scripts -->
 <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
 <script>
 document.addEventListener("DOMContentLoaded", () => {
@@ -198,63 +227,71 @@ document.addEventListener("DOMContentLoaded", () => {
   const guardarBtn = document.getElementById("guardar-btn");
   const form = document.getElementById("perfil-form");
   const inputs = form.querySelectorAll("input, select, textarea");
+  const chipInputs = document.querySelectorAll(".chip-input");
+  const fileInputs = form.querySelectorAll(".file-input");
+  const fileTriggers = document.querySelectorAll("[data-file-trigger]");
 
-  // Si el perfil está vacío, activar modo edición automáticamente
-  const tieneDatos = "{{ perfil.area_profesional }}" !== "";
-  if (!tieneDatos) {
-    inputs.forEach(el => el.disabled = false);
-    editarBtn.classList.add("hidden");
-    guardarBtn.classList.remove("hidden");
+  function setEditingState(editing) {
+    inputs.forEach(el => el.disabled = !editing);
+    chipInputs.forEach(el => el.classList.toggle("hidden", !editing));
+    fileTriggers.forEach(trigger => {
+      trigger.classList.toggle("pointer-events-none", !editing);
+      trigger.classList.toggle("opacity-60", !editing);
+    });
+    editarBtn.classList.toggle("hidden", editing);
+    guardarBtn.classList.toggle("hidden", !editing);
   }
 
-  // Alternar entre modo edición / lectura
-  editarBtn.addEventListener("click", () => {
-    inputs.forEach(el => el.disabled = false);
-    editarBtn.classList.add("hidden");
-    guardarBtn.classList.remove("hidden");
-    document.querySelectorAll(".chip-input").forEach(el => el.classList.remove("hidden"));
-  });
+  const tieneDatos = "{{ perfil.area_profesional }}" !== "";
+  if (!tieneDatos) {
+    setEditingState(true);
+  } else {
+    setEditingState(false);
+  }
 
-  // Antes de enviar, habilitar todos los campos
+  editarBtn.addEventListener("click", () => setEditingState(true));
+
   form.addEventListener("submit", () => {
     inputs.forEach(el => el.disabled = false);
   });
 
-  // CHIPS setup
   function configurarChips(containerId, inputId, hiddenId) {
-    const cont = document.getElementById(containerId);
+    const container = document.getElementById(containerId);
     const input = document.getElementById(inputId);
     const hidden = document.getElementById(hiddenId);
 
-    cont.addEventListener("click", () => input.focus());
-    input.addEventListener("keydown", e => {
-      if (e.key === "Enter" && input.value.trim() !== "") {
+    const refreshHidden = () => {
+      const chips = Array.from(container.querySelectorAll(".chip.removable")).map(el => el.dataset.value);
+      hidden.value = chips.join(", ");
+    };
+
+    container.addEventListener("click", (e) => {
+      if (e.target.classList.contains("chip-remover")) {
+        e.target.parentElement.remove();
+        refreshHidden();
+      }
+    });
+
+    input.addEventListener("keydown", (e) => {
+      if (e.key === "Enter" && input.value.trim()) {
         e.preventDefault();
-        const chipText = input.value.trim();
+        const value = input.value.trim();
         const chip = document.createElement("span");
         chip.className = "chip removable";
-        chip.textContent = chipText;
-        cont.insertBefore(chip, input);
+        chip.dataset.value = value;
+        chip.innerHTML = `${value}<button type="button" class="ml-2 chip-remover text-primary-700 font-bold">×</button>`;
+        container.insertBefore(chip, input);
         input.value = "";
-        actualizarHidden();
+        refreshHidden();
       }
     });
 
-    cont.addEventListener("click", e => {
-      if (e.target.classList.contains("removable")) {
-        e.target.remove();
-        actualizarHidden();
-      }
-    });
-
-    function actualizarHidden() {
-      const chips = Array.from(cont.querySelectorAll(".chip")).map(c => c.textContent.replace("×", "").trim());
-      hidden.value = chips.join(", ");
-    }
+    refreshHidden();
   }
 
   configurarChips("chips-blandas", "input-blandas", "hidden-blandas");
   configurarChips("chips-tecnicas", "input-tecnicas", "hidden-tecnicas");
 });
 </script>
+
 {% endblock %}

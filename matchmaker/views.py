@@ -1,10 +1,15 @@
 from django.http import JsonResponse, HttpResponseBadRequest
 from django.views.decorators.http import require_POST
 from .models import Candidate, CandidateProfile, Job
-from .utils_matching import semantic_match
 from .utils_extraction import extract_text_from_pdf, build_profile_from_text
-from django.shortcuts import render,get_object_or_404, redirect 
+from django.shortcuts import render, get_object_or_404, redirect
 from .forms import JobForm
+
+
+def _semantic_match(job, candidates):
+    from .utils_matching import semantic_match as _semantic_match_impl
+
+    return _semantic_match_impl(job, candidates)
 
 @require_POST
 def upload_cv_view(request):
@@ -50,7 +55,7 @@ def upload_form_view(request):
 def recruiter_dashboard(request, job_id):
     job = get_object_or_404(Job, id=job_id)
     candidates = Candidate.objects.all().distinct('nombre')
-    matches = semantic_match(job, candidates)
+    matches = _semantic_match(job, candidates)
     return render(request, "matchmaker/recruiter_dashboard.html", {
         "job": job,
         "matches": matches,

@@ -1,0 +1,35 @@
+# --- Núcleo del proyecto Django ---
+Django==5.0.6
+psycopg2-binary==2.9.9  # Conector PostgreSQL
+
+# --- OCR y procesamiento de PDFs ---
+pytesseract==0.3.10
+pdf2image==1.17.0
+Pillow==10.3.0
+poppler-utils  # debe estar instalado en el sistema, no vía pip (para pdf2image)
+
+# --- Inteligencia Artificial / NLP ---
+transformers==4.44.2
+huggingface-hub==0.24.6
+torch==2.6.0
+torchvision==0.21.0
+sentence-transformers==3.0.1
+langdetect==1.0.9
+
+# --- Manipulación de datos ---
+numpy==1.26.4
+pandas==2.2.1
+
+# --- Herramientas de desarrollo y compatibilidad ---
+requests==2.32.3
+tqdm==4.66.4
+regex==2024.7.24
+python-dotenv==1.0.1
+
+# --- Seguridad y CORS ---
+django-cors-headers==4.4.0
+
+# --- Testing / Utilidades ---
+pytest==8.2.2
+black==24.4.2
+

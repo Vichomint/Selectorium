@@ -1,52 +1,101 @@
-﻿{% extends "layout_reclutador.html" %}
+{% extends "layout_reclutador.html" %}
 {% block title %}Detalle del Postulante{% endblock %}
 {% block main_content %}
-
-<div class="bg-white shadow-md rounded-lg p-6">
-  <h2 class="text-2xl font-bold text-primary-700 mb-4">
-    {{ postulacion.postulante.username }}
-  </h2>
-  <p class="text-gray-500 text-sm mb-2">
-    <i class="fas fa-briefcase mr-1"></i> {{ postulacion.vacante.titulo }}
-  </p>
-
-  <p class="text-sm text-gray-500 mb-6">
-    Estado actual:
-    <span class="px-3 py-1 rounded-full text-sm font-bold {% if postulacion.estado == 'enviado' %} bg-yellow-100 text-yellow-700 {% elif postulacion.estado == 'visto' %} bg-blue-100 text-blue-700 {% elif postulacion.estado == 'aceptado' %} bg-green-100 text-green-700 {% elif postulacion.estado == 'rechazado' %} bg-red-100 text-red-700 {% endif %}">
-      {{ postulacion.get_estado_display }}
-    </span>
+<div class="space-y-8">
+  <div class="bg-white shadow-md rounded-xl p-6">
+    <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+      <div>
+        <h2 class="text-2xl font-bold text-primary-700">
+          {{ postulacion.postulante.username }}
+        </h2>
+        <p class="text-sm text-gray-500">
+          <i class="fas fa-briefcase mr-1"></i> {{ postulacion.vacante.titulo }}
+        </p>
+      </div>
+      <div class="flex flex-wrap items-center gap-2">
+        <span class="px-3 py-1 rounded-full text-xs font-semibold uppercase tracking-wide {% if postulacion.estado == 'enviado' %}bg-yellow-100 text-yellow-700{% elif postulacion.estado == 'visto' %}bg-blue-100 text-blue-700{% elif postulacion.estado == 'aceptado' %}bg-green-100 text-green-700{% elif postulacion.estado == 'rechazado' %}bg-red-100 text-red-700{% else %}bg-gray-100 text-gray-700{% endif %}">
+          {{ postulacion.get_estado_display }}
+        </span>
+        <span class="px-3 py-1 rounded-full text-xs font-semibold uppercase tracking-wide bg-slate-100 text-slate-700">
+          {{ postulacion.get_etapa_proceso_display }}
+        </span>
+        {% if match_label %}
+        <span class="px-3 py-1 rounded-full text-xs font-semibold uppercase tracking-wide {% if match_label == 'Muy apto' %}bg-green-100 text-green-700{% elif match_label == 'Apto' %}bg-emerald-100 text-emerald-700{% elif match_label == 'Poco apto' %}bg-yellow-100 text-yellow-700{% else %}bg-gray-100 text-gray-700{% endif %}">
+          {{ match_label }}
+        </span>
+        {% endif %}
+      </div>
+    </div>
     {% if postulacion.fecha_visto %}
-    <span class="text-xs text-gray-500 ml-2">(visto el {{ postulacion.fecha_visto|date:"d/m/Y H:i" }})</span>
+    <p class="text-xs text-gray-500 mt-2">
+      Marcado como visto el {{ postulacion.fecha_visto|date:"d/m/Y H:i" }}.
+    </p>
     {% endif %}
-  </p>
+    {% if match_score %}
+    <p class="text-sm text-gray-600 mt-4">
+      Puntaje estimado: <span class="font-semibold text-primary-700">{{ match_score|floatformat:1 }}</span> / 100
+    </p>
+    {% endif %}
+    {% if top_skills %}
+    <div class="mt-3 flex flex-wrap gap-2">
+      {% for skill in top_skills %}
+      <span class="px-3 py-1 text-xs rounded-full bg-gray-100 text-gray-700">{{ skill }}</span>
+      {% endfor %}
+    </div>
+    {% endif %}
+  </div>
 
-  <hr class="my-4" />
+  <div class="bg-white shadow-md rounded-xl p-6">
+    <h3 class="text-lg font-semibold text-gray-800 mb-4">Seguimiento del proceso</h3>
+    <form method="post" class="flex flex-col gap-4 sm:flex-row sm:items-end">
+      {% csrf_token %}
+      <div class="flex-1">
+        <label for="etapa_proceso" class="block text-sm font-medium text-gray-700 mb-1">Etapa actual</label>
+        <select
+          id="etapa_proceso"
+          name="etapa_proceso"
+          class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+        >
+          {% for value, label in etapas_proceso %}
+          <option value="{{ value }}" {% if postulacion.etapa_proceso == value %}selected{% endif %}>
+            {{ label }}
+          </option>
+          {% endfor %}
+        </select>
+      </div>
+      <button type="submit" class="btn-primary">
+        Actualizar etapa
+      </button>
+    </form>
+  </div>
 
-  <h3 class="text-lg font-semibold text-gray-800 mb-2">Respuestas del postulante</h3>
-  {% if respuestas %}
-  <ul class="space-y-2">
-    {% for respuesta in respuestas %}
-    <li class="bg-gray-50 border rounded-lg p-3">
-      <p class="font-semibold">{{ respuesta.pregunta.texto }}</p>
-      <p class="text-gray-700 whitespace-pre-line">{{ respuesta.texto }}</p>
-    </li>
-    {% endfor %}
-  </ul>
-  {% else %}
-  <p class="text-gray-500">Este postulante no respondió preguntas adicionales.</p>
-  {% endif %}
-
-  <hr class="my-4" />
+  <div class="bg-white shadow-md rounded-xl p-6">
+    <h3 class="text-lg font-semibold text-gray-800 mb-3">Respuestas del postulante</h3>
+    {% if respuestas %}
+      <ul class="space-y-3">
+        {% for respuesta in respuestas %}
+        <li class="bg-gray-50 border border-gray-200 rounded-lg p-4">
+          <p class="font-semibold text-gray-800">{{ respuesta.pregunta.texto }}</p>
+          <p class="text-gray-700 mt-1 whitespace-pre-line">{{ respuesta.texto }}</p>
+        </li>
+        {% endfor %}
+      </ul>
+    {% else %}
+      <p class="text-sm text-gray-500">Este postulante no respondio preguntas adicionales.</p>
+    {% endif %}
+  </div>
 
   {% if perfil and perfil.cv %}
-  <p>
-    <a href="{{ perfil.cv.url }}" class="btn-primary" target="_blank">Ver CV</a>
-  </p>
+  <div class="bg-white shadow-md rounded-xl p-6">
+    <h3 class="text-lg font-semibold text-gray-800 mb-3">Documentos</h3>
+    <a href="{{ perfil.cv.url }}" class="btn-primary" target="_blank">
+      <i class="far fa-file-pdf mr-2"></i> Ver CV del postulante
+    </a>
+  </div>
   {% endif %}
 
-  <div class="mt-6">
+  <div>
     <a href="{% url 'administrar_vacante' postulacion.vacante.id %}" class="btn-secondary">Volver</a>
   </div>
 </div>
-
 {% endblock %}

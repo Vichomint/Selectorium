@@ -1,44 +1,169 @@
-{% extends "layout_postulante.html" %} {% block title %}Dashboard Postulante -
-Selectorium{% endblock %} {% block main_content %}
-<h2 class="text-2xl font-bold text-primary-700 mb-6">
-  <i class="fas fa-briefcase mr-2"></i> Vacantes Disponibles
-</h2>
+{% extends "layout_postulante.html" %}
+{% load static %}
 
-<!-- Lista de vacantes -->
-<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-  <!-- Ejemplo de tarjeta de vacante -->
-  <div class="bg-white rounded-lg shadow-md p-6 border border-gray-100">
-    <h3 class="text-lg font-semibold text-gray-800 mb-2">
-      Desarrollador Frontend
-    </h3>
-    <p class="text-sm text-gray-600 mb-4">
-      Buscamos un desarrollador con experiencia en React y Tailwind para unirse
-      a nuestro equipo.
-    </p>
-    <div class="flex justify-between items-center">
-      <span class="text-sm text-gray-500"
-        ><i class="fas fa-map-marker-alt mr-1"></i> Remoto</span
-      >
-        Postular
-      </a>
+{% block title %}Dashboard Postulante - Selectorium{% endblock %}
+
+{% block main_content %}
+<div class="space-y-10">
+  <section class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+    <div>
+      <h1 class="text-3xl font-bold text-gray-900">
+        Hola, {{ user.first_name|default:user.username }}!
+      </h1>
+      <p class="mt-2 text-sm text-gray-600 max-w-2xl">
+        Aqui puedes seguir el avance de tus postulaciones y detectar habilidades que puedes reforzar para lograr un mejor encaje con tus vacantes favoritas.
+      </p>
     </div>
-  </div>
+    <a
+      href="{% url 'listar_vacantes' %}"
+      class="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-primary-600 text-white text-sm font-semibold shadow-sm hover:bg-primary-700 transition"
+    >
+      <i class="fas fa-briefcase"></i>
+      Buscar nuevas vacantes
+    </a>
+  </section>
 
-  <!-- Otra vacante de ejemplo -->
-  <div class="bg-white rounded-lg shadow-md p-6 border border-gray-100">
-    <h3 class="text-lg font-semibold text-gray-800 mb-2">Analista de Datos</h3>
-    <p class="text-sm text-gray-600 mb-4">
-      Empresa en crecimiento busca analista de datos con experiencia en Python y
-      SQL.
-    </p>
-    <div class="flex justify-between items-center">
-      <span class="text-sm text-gray-500"
-        ><i class="fas fa-map-marker-alt mr-1"></i> Santiago, Chile</span
-      >
+  <section class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
+    {% for metric in metric_cards %}
+      <div class="bg-white border border-gray-100 rounded-2xl p-5 shadow-sm">
+        <p class="text-sm text-gray-500">{{ metric.label }}</p>
+        <p class="mt-2 text-3xl font-bold {{ metric.color|default:'text-gray-900' }}">
+          {{ metric.value|default_if_none:"0" }}
+          {% if metric.suffix %}<span class="text-lg font-semibold">{{ metric.suffix }}</span>{% endif %}
+        </p>
+      </div>
+    {% endfor %}
+  </section>
 
-        Postular
-      </a>
+  <section class="bg-white border border-gray-100 rounded-2xl p-6 shadow-sm">
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+      <div>
+        <h2 class="text-xl font-semibold text-gray-900">Estado de mis postulaciones</h2>
+        <p class="text-sm text-gray-600">Revisa cuantas postulaciones tienes en cada fase.</p>
+      </div>
     </div>
-  </div>
+    <div class="mt-6 grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
+      {% for card in estado_cards %}
+        <div class="rounded-xl border border-gray-100 p-5 bg-gray-50">
+          <p class="text-sm text-gray-500">{{ card.label }}</p>
+          <p class="mt-2 text-2xl font-semibold text-gray-900">
+            {{ card.total|default_if_none:"0" }}
+          </p>
+          <p class="mt-1 text-xs text-gray-500 font-medium">
+            {{ card.percent|default_if_none:"0" }}%
+          </p>
+          <div class="mt-4 h-2 rounded-full bg-gray-200 overflow-hidden">
+            <div
+              class="
+                h-full rounded-full
+                {% if card.codigo == 'aceptado' %}bg-emerald-500
+                {% elif card.codigo == 'rechazado' %}bg-rose-500
+                {% elif card.codigo == 'visto' %}bg-amber-500
+                {% else %}bg-primary-500{% endif %}
+              "
+              style="width: {{ card.percent }}%;"
+            ></div>
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+  </section>
+
+  <section class="grid grid-cols-1 xl:grid-cols-2 gap-6">
+    <div class="bg-white border border-gray-100 rounded-2xl p-6 shadow-sm">
+      <div class="flex items-center justify-between">
+        <h2 class="text-xl font-semibold text-gray-900">Ultimas postulaciones</h2>
+        <a href="{% url 'mis_postulaciones' %}" class="text-sm font-semibold text-primary-600 hover:text-primary-700">
+          Ver todas
+        </a>
+      </div>
+      {% if recientes %}
+        <ul class="mt-6 space-y-4">
+          {% for postulacion in recientes %}
+            <li class="p-4 rounded-xl border border-gray-100 bg-gray-50 hover:bg-white transition">
+              <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-2">
+                <div>
+                  <h3 class="text-lg font-semibold text-gray-900">
+                    {{ postulacion.vacante.titulo }}
+                  </h3>
+                  <p class="text-sm text-gray-500">
+                    Postulado el {{ postulacion.fecha_postulacion|date:"d/m/Y" }}
+                  </p>
+                </div>
+                <span
+                  class="inline-flex items-center justify-center px-3 py-1 rounded-full text-xs font-semibold uppercase
+                  {% if postulacion.estado == 'aceptado' %}bg-emerald-100 text-emerald-700
+                  {% elif postulacion.estado == 'rechazado' %}bg-rose-100 text-rose-700
+                  {% elif postulacion.estado == 'visto' %}bg-amber-100 text-amber-700
+                  {% else %}bg-blue-100 text-blue-700{% endif %}"
+                >
+                  {{ postulacion.get_estado_display }}
+                </span>
+              </div>
+              <div class="mt-3 flex flex-wrap items-center gap-3 text-sm text-gray-500">
+                {% if postulacion.vacante.ubicacion %}
+                  <span class="inline-flex items-center gap-2">
+                    <i class="fas fa-map-marker-alt text-primary-500"></i>
+                    {{ postulacion.vacante.ubicacion }}
+                  </span>
+                {% endif %}
+              </div>
+              <div class="mt-4">
+                <a
+                  href="{% url 'detalle_vacante' postulacion.vacante.id %}"
+                  class="inline-flex items-center gap-2 text-sm font-semibold text-primary-600 hover:text-primary-700"
+                >
+                  Ver detalles
+                  <i class="fas fa-arrow-right"></i>
+                </a>
+              </div>
+            </li>
+          {% endfor %}
+        </ul>
+      {% else %}
+        <p class="mt-6 text-sm text-gray-500">
+          Aun no tienes postulaciones registradas. Explora las vacantes disponibles para comenzar.
+        </p>
+      {% endif %}
+    </div>
+
+    <div class="bg-white border border-gray-100 rounded-2xl p-6 shadow-sm space-y-6">
+      <div>
+        <h2 class="text-xl font-semibold text-gray-900">Skills a reforzar</h2>
+        <p class="text-sm text-gray-600">
+          Estas habilidades aparecen con frecuencia en tus vacantes y aun no las tienes declaradas. Practicarlas puede mejorar tu match.
+        </p>
+        {% if skills_recomendadas %}
+          <div class="mt-4 flex flex-wrap gap-3">
+            {% for skill in skills_recomendadas %}
+              <span class="px-3 py-1 rounded-full bg-amber-100 text-amber-700 text-xs font-semibold uppercase tracking-wide">
+                {{ skill }}
+              </span>
+            {% endfor %}
+          </div>
+        {% else %}
+          <p class="mt-4 text-sm text-gray-500">
+            Excelente. Tus postulaciones recientes no muestran brechas claras en habilidades clave.
+          </p>
+        {% endif %}
+      </div>
+      <div>
+        <h2 class="text-xl font-semibold text-gray-900">Tus skills destacadas</h2>
+        {% if skills_actuales %}
+          <div class="mt-4 flex flex-wrap gap-3">
+            {% for skill in skills_actuales %}
+              <span class="px-3 py-1 rounded-full bg-primary-100 text-primary-700 text-xs font-semibold uppercase tracking-wide">
+                {{ skill }}
+              </span>
+            {% endfor %}
+          </div>
+        {% else %}
+          <p class="mt-4 text-sm text-gray-500">
+            Aun no has cargado tus skills tecnicas. Completa tu perfil para obtener recomendaciones mas precisas.
+          </p>
+        {% endif %}
+      </div>
+    </div>
+  </section>
 </div>
 {% endblock %}

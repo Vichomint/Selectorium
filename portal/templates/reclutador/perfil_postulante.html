@@ -1,46 +1,74 @@
-{% extends "layout_reclutador.html" %} {% block title %}Perfil del
-Postulante{%endblock%} {% block main_content %}
-<div class="bg-white shadow-md rounded-lg p-6">
-  <h2 class="text-2xl font-bold text-primary-700 mb-4">
-    {{ perfil.user.username }}
-  </h2>
+{% extends "layout_reclutador.html" %}
+{% block title %}Perfil del Postulante{% endblock %}
+{% block main_content %}
 
-  <p class="text-sm text-gray-500 mb-2">Email: {{ perfil.user.email }}</p>
-  <p class="text-sm text-gray-500 mb-2">
-    Fecha de nacimiento: {{ perfil.fecha_nacimiento|date:"d/m/Y" }}
-  </p>
+<div class="bg-white shadow rounded-2xl overflow-hidden">
+  <div class="h-24 bg-gradient-to-r from-primary-500 to-primary-700"></div>
+  <div class="p-6 pt-0">
+    <div class="-mt-12 flex items-end gap-4">
+      {% if perfil.foto %}
+      <img src="{{ perfil.foto.url }}" alt="avatar" class="w-24 h-24 rounded-full ring-4 ring-white object-cover" />
+      {% else %}
+      <div class="w-24 h-24 rounded-full ring-4 ring-white bg-primary-100 flex items-center justify-center text-primary-700 text-2xl font-bold">
+        {{ perfil.user.username|slice:":1"|upper }}
+      </div>
+      {% endif %}
+      <div class="pb-2">
+        <h2 class="text-2xl font-bold text-gray-900">{{ perfil.user.username }}</h2>
+        <p class="text-sm text-gray-500">{{ perfil.user.email }}</p>
+      </div>
+    </div>
 
-  <div class="mt-4">
-    <h3 class="font-semibold text-gray-800">Estudios</h3>
-    <p class="text-gray-600 whitespace-pre-line">{{ perfil.estudios }}</p>
-  </div>
+    <div class="mt-6 grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div class="lg:col-span-2">
+        <h3 class="text-lg font-semibold text-gray-800 mb-2">Resumen del CV</h3>
+        <div class="bg-gray-50 rounded p-4">
+          <p class="text-sm text-gray-700"><strong>Área:</strong> {{ perfil.area_profesional|default:"No informado" }}</p>
+          <p class="text-sm text-gray-700"><strong>Nivel educativo:</strong> {{ perfil.nivel_educacion|default:"-" }}</p>
+          <p class="text-sm text-gray-700"><strong>Años de experiencia:</strong> {{ perfil.anios_experiencia|default:"-" }}</p>
+          <p class="text-sm text-gray-700"><strong>Tipo de jornada:</strong> {{ perfil.tipo_jornada|default:"-" }}</p>
+          <p class="text-sm text-gray-700"><strong>Disponibilidad:</strong> {{ perfil.disponibilidad|default:"-" }}</p>
+          <p class="text-sm text-gray-700"><strong>Pretensión de renta:</strong> {{ perfil.pretension_renta|default:"-" }}</p>
+        </div>
 
-  <div class="mt-4">
-    <h3 class="font-semibold text-gray-800">Experiencia laboral</h3>
-    <p class="text-gray-600 whitespace-pre-line">{{ perfil.experiencia }}</p>
-  </div>
+        {% if skills_list %}
+        <h4 class="mt-4 text-sm font-semibold text-gray-800">Principales skills</h4>
+        <div class="mt-2 flex flex-wrap gap-1">
+          {% for s in skills_list|slice:":12" %}
+          <span class="px-2 py-0.5 text-xs rounded bg-gray-100 text-gray-700">{{ s }}</span>
+          {% endfor %}
+        </div>
+        {% endif %}
 
-  <div class="mt-4">
-    <h3 class="font-semibold text-gray-800">Currículum</h3>
-    {% if perfil.cv %}
-    <a
-      href="{{ perfil.cv.url }}"
-      target="_blank"
-      class="text-primary-600 hover:underline"
-      >Ver CV</a
-    >
-    {% else %}
-    <p class="text-gray-500">No se ha cargado un CV.</p>
-    {% endif %}
-  </div>
+        {% if perfil.estudios %}
+        <div class="mt-6">
+          <h3 class="text-sm font-semibold text-gray-800">Estudios</h3>
+          <p class="text-sm text-gray-600 whitespace-pre-line">{{ perfil.estudios }}</p>
+        </div>
+        {% endif %}
 
-  <div class="mt-6">
-    <a
-      href="{% url 'reclutador_vacantes' %}"
-      class="bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-2 px-6 rounded-lg transition"
-    >
-      Volver
-    </a>
+        {% if perfil.experiencia %}
+        <div class="mt-4">
+          <h3 class="text-sm font-semibold text-gray-800">Experiencia laboral</h3>
+          <p class="text-sm text-gray-600 whitespace-pre-line">{{ perfil.experiencia }}</p>
+        </div>
+        {% endif %}
+      </div>
+
+      <div>
+        <h3 class="text-lg font-semibold text-gray-800 mb-2">Currículum</h3>
+        {% if perfil.cv %}
+        <a href="{{ perfil.cv.url }}" target="_blank" class="btn-primary w-full text-center inline-block">Ver CV</a>
+        {% else %}
+        <p class="text-gray-500">No se ha cargado un CV.</p>
+        {% endif %}
+
+        <div class="mt-6">
+          <a href="{% url 'reclutador_postulantes' %}" class="btn-secondary">Volver a postulantes</a>
+        </div>
+      </div>
+    </div>
   </div>
 </div>
+
 {% endblock %}

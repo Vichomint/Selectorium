@@ -1,33 +1,69 @@
-{% extends "layout_postulante.html" %} {% block title %}Vacantes Disponibles
-{%endblock %} {% block main_content %}
-<h2 class="text-2xl font-bold text-primary-700 mb-6">
-  <i class="fas fa-briefcase mr-2"></i> Vacantes Disponibles
+{% extends "layout_postulante.html" %}
+{% block title %}Vacantes Disponibles{% endblock %}
+{% block main_content %}
+<h2 class="text-2xl font-bold text-primary-700 mb-6 flex items-center gap-2">
+  <i class="fas fa-briefcase text-primary-600"></i>
+  Vacantes Disponibles
 </h2>
 
-<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-  {% for vacante in vacantes %}
-  <div class="bg-white rounded-lg shadow-md p-6 border border-gray-100">
-    <h3 class="text-lg font-semibold text-gray-800 mb-2">
-      {{ vacante.titulo }}
-    </h3>
-    <p class="text-sm text-gray-600 mb-4">
-      {{ vacante.descripcion|truncatewords:20 }}
-    </p>
-    <div class="flex justify-between items-center">
-      <span class="text-sm text-gray-500">
-        <i class="fas fa-map-marker-alt mr-1"></i> {{ vacante.ubicacion }}
+<form method="get" class="bg-white shadow rounded-xl p-4 mb-6 grid grid-cols-1 md:grid-cols-4 gap-4">
+  <div class="md:col-span-2">
+    <label class="block text-sm font-semibold text-gray-700 mb-1">Buscar</label>
+    <input type="text" name="q" value="{{ filters.q }}" placeholder="Título o descripción"
+           class="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-primary-400">
+  </div>
+  <div>
+    <label class="block text-sm font-semibold text-gray-700 mb-1">Ubicación</label>
+    <input type="text" name="ubicacion" value="{{ filters.ubicacion }}" placeholder="Ciudad, país..."
+           class="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-primary-400">
+  </div>
+  <div>
+    <label class="block text-sm font-semibold text-gray-700 mb-1">Publicado hace</label>
+    <select name="days" class="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-primary-400">
+      <option value="">Cualquier fecha</option>
+      <option value="7" {% if filters.days == "7" %}selected{% endif %}>Últimos 7 días</option>
+      <option value="14" {% if filters.days == "14" %}selected{% endif %}>Últimos 14 días</option>
+      <option value="30" {% if filters.days == "30" %}selected{% endif %}>Últimos 30 días</option>
+      <option value="60" {% if filters.days == "60" %}selected{% endif %}>Últimos 60 días</option>
+    </select>
+  </div>
+  <div class="md:col-span-4 flex items-center justify-end gap-2">
+    <a href="{% url 'listar_vacantes' %}" class="btn-secondary">Limpiar</a>
+    <button type="submit" class="btn-primary">Buscar</button>
+  </div>
+</form>
+
+{% if vacantes %}
+<div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+  {% for item in vacantes %}
+  {% with vacante=item.obj %}
+  <div class="bg-white rounded-xl shadow border border-gray-100 p-5 flex flex-col gap-3">
+    <div>
+      <h3 class="text-lg font-semibold text-primary-700">{{ vacante.titulo }}</h3>
+      <p class="text-sm text-gray-600 line-clamp-3">{{ vacante.descripcion }}</p>
+    </div>
+    <div class="flex items-center justify-between text-sm text-gray-500">
+      <span><i class="fas fa-map-marker-alt mr-1"></i>{{ vacante.ubicacion|default:"Remoto" }}</span>
+      <span>
+        {% if item.days_since == 0 %}
+          Publicado hoy
+        {% elif item.days_since == 1 %}
+          Publicado hace 1 día
+        {% else %}
+          Publicado hace {{ item.days_since }} días
+        {% endif %}
       </span>
-      <a
-        href="{% url 'detalle_vacante' vacante.id %}"
-        class="bg-primary-500 hover:bg-primary-600 text-white text-sm font-bold py-2 px-4 rounded-lg transition"
-      >
-        Ver más
-      </a>
+    </div>
+    <div class="flex justify-between items-center pt-2">
+      <a href="{% url 'detalle_vacante' vacante.id %}" class="btn-primary btn-sm">Ver más</a>
+      <a href="{% url 'postular_vacante' vacante.id %}" class="btn-secondary btn-sm">Postular</a>
     </div>
   </div>
-  {% empty %}
-  <p class="text-gray-600">No hay vacantes disponibles en este momento.</p>
+  {% endwith %}
   {% endfor %}
 </div>
+{% else %}
+<p class="text-gray-500 mt-4">No hay vacantes disponibles con los filtros seleccionados.</p>
+{% endif %}
 
 {% endblock %}

@@ -1,48 +1,78 @@
-{% extends "layout_reclutador.html" %} {% block title %}Mis Vacante {%endblock%}
+{% extends "layout_reclutador.html" %}
+{% block title %}Mis Vacantes{% endblock %}
 {% block main_content %}
-<h2 class="text-2xl font-bold text-primary-700 mb-6">
-  <i class="fas fa-briefcase mr-2"></i> Mis Vacantes
+<h2 class="text-2xl font-bold text-primary-700 mb-6 flex items-center gap-2">
+  <i class="fas fa-briefcase text-primary-600"></i>
+  Mis Vacantes
 </h2>
 
-<a
-  href="{% url 'crear_vacante' %}"
-  class="bg-primary-500 hover:bg-primary-600 text-white px-4 py-2 rounded-lg mb-4 inline-block"
->
+<form method="get" class="bg-white shadow rounded-xl p-4 mb-6 grid grid-cols-1 md:grid-cols-4 gap-4">
+  <div class="md:col-span-2">
+    <label class="block text-sm font-semibold text-gray-700 mb-1">Buscar</label>
+    <input type="text" name="q" value="{{ filters.q }}" placeholder="Titulo o descripción"
+           class="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-primary-400">
+  </div>
+  <div>
+    <label class="block text-sm font-semibold text-gray-700 mb-1">Ubicación</label>
+    <input type="text" name="ubicacion" value="{{ filters.ubicacion }}" placeholder="Ciudad, país..."
+           class="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-primary-400">
+  </div>
+  <div>
+    <label class="block text-sm font-semibold text-gray-700 mb-1">Publicado hace</label>
+    <select name="days" class="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-primary-400">
+      <option value="">Cualquier fecha</option>
+      <option value="7" {% if filters.days == "7" %}selected{% endif %}>Últimos 7 días</option>
+      <option value="14" {% if filters.days == "14" %}selected{% endif %}>Últimos 14 días</option>
+      <option value="30" {% if filters.days == "30" %}selected{% endif %}>Últimos 30 días</option>
+      <option value="60" {% if filters.days == "60" %}selected{% endif %}>Últimos 60 días</option>
+    </select>
+  </div>
+  <div class="md:col-span-4 flex items-center justify-end gap-2">
+    <a href="{% url 'reclutador_vacantes' %}" class="btn-secondary">Limpiar</a>
+    <button type="submit" class="btn-primary">Buscar</button>
+  </div>
+</form>
+
+<a href="{% url 'crear_vacante' %}" class="bg-primary-500 hover:bg-primary-600 text-white px-4 py-2 rounded-lg mb-4 inline-block">
   <i class="fas fa-plus mr-1"></i> Crear Vacante
 </a>
 
-<table class="w-full bg-white shadow-md rounded-lg overflow-hidden text-sm">
-  <thead class="bg-primary-600 text-white">
-    <tr>
-      <th class="px-4 py-2 text-left">Título</th>
-      <th class="px-4 py-2 text-left">Ubicación</th>
-      <th class="px-4 py-2 text-left">Fecha</th>
-      <th class="px-4 py-2 text-left">Acciones</th>
-    </tr>
-  </thead>
-  <tbody class="divide-y divide-gray-200">
-    {% for vacante in vacantes %}
-    <tr>
-      <td class="px-4 py-2">{{ vacante.titulo }}</td>
-      <td class="px-4 py-2">{{ vacante.ubicacion }}</td>
-      <td class="px-4 py-2">
-        {{ vacante.fecha_publicacion|date:"d/m/Y H:i" }}
-      </td>
-      <td class="px-4 py-2">
-        <a
-          href="{% url 'administrar_vacante' vacante.id %}"
-          class="text-primary-600 hover:underline"
-          >Administrar</a
-        >
-      </td>
-    </tr>
-    {% empty %}
-    <tr>
-      <td colspan="4" class="px-4 py-2 text-center text-gray-500">
-        Aún no has creado vacantes.
-      </td>
-    </tr>
-    {% endfor %}
-  </tbody>
-</table>
+{% if vacantes %}
+<div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+  {% for item in vacantes %}
+  {% with vacante=item.obj %}
+  <div class="bg-white shadow rounded-xl p-5 border border-gray-100 flex flex-col gap-3">
+    <div>
+      <h3 class="text-lg font-semibold text-primary-700">{{ vacante.titulo }}</h3>
+      <p class="text-sm text-gray-500">{{ vacante.ubicacion|default:"Sin ubicación" }}</p>
+    </div>
+    <p class="text-sm text-gray-600 line-clamp-3">{{ vacante.descripcion }}</p>
+    <p class="text-xs text-gray-500">
+      {% if item.days_since == 0 %}
+        Publicado hoy
+      {% elif item.days_since == 1 %}
+        Publicado hace 1 día
+      {% else %}
+        Publicado hace {{ item.days_since }} días
+      {% endif %}
+    </p>
+    <div class="flex gap-3 mt-2">
+      <a href="{% url 'administrar_vacante' vacante.id %}" class="btn-primary btn-sm">Administrar</a>
+      {% if vacante.activa %}
+      <form method="post" action="{% url 'cerrar_vacante' vacante.id %}">
+        {% csrf_token %}
+        <button type="submit" class="btn-outline btn-sm">Cerrar</button>
+      </form>
+      {% else %}
+      <span class="px-3 py-1 rounded-full bg-gray-100 text-gray-500 text-xs font-semibold self-center">Cerrada</span>
+      {% endif %}
+    </div>
+  </div>
+  {% endwith %}
+  {% endfor %}
+</div>
+{% else %}
+<p class="text-gray-500 mt-4">Aún no has creado vacantes.</p>
+{% endif %}
+
 {% endblock %}

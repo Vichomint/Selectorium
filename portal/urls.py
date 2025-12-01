@@ -2,6 +2,7 @@ from django.urls import path
 from . import views
 
 urlpatterns = [
+    path("", views.landing_view, name="home"),
     # Autenticación
     path("login/", views.login_view, name="login"),
     path("logout/", views.logout_view, name="logout"),
@@ -26,7 +27,6 @@ urlpatterns = [
     path("reclutador/postulantes/", views.reclutador_postulantes, name="reclutador_postulantes"),
     path("reclutador/estadisticas/", views.reclutador_estadisticas, name="reclutador_estadisticas"),
     path("reclutador/configuracion/", views.reclutador_configuracion, name="reclutador_configuracion"),
-    path("", views.role_redirect_view, name="home"),
     path("reclutador/vacantes/", views.reclutador_vacantes, name="reclutador_vacantes"),
     path("reclutador/vacantes/crear/", views.crear_vacante, name="crear_vacante"),
     path("reclutador/vacantes/<int:vacante_id>/", views.administrar_vacante, name="administrar_vacante"),

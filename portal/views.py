@@ -27,6 +27,87 @@ def _calculate_match_score(*, cv_skills, job_description, skills_obligatorias, s
     )
 
 
+def landing_view(request):
+    plan_cards = [
+        {
+            "name": "Starter",
+            "price": "Gratis",
+            "description": "Recluta con IA desde el primer día y mide el impacto sin compromisos.",
+            "cta": "Crear cuenta",
+            "cta_url_name": "signup",
+            "tagline": "Optimizado para equipos en fase piloto",
+            "improvement": "Mejora continua del dashboard de vacantes y reportes semanales automáticos.",
+            "features": [
+                "Hasta 6 vacantes activas simultáneas",
+                "Motor de búsqueda semántica básico",
+                "Insights de mercado esenciales",
+                "Soporte por correo en 48h",
+            ],
+        },
+        {
+            "name": "Growth",
+            "price": "$15.000 clp/mes",
+            "description": "Automatiza procesos completos y comparte analítica avanzada con tu equipo.",
+            "cta": "Hablar con ventas",
+            "cta_url": "mailto:contacto@selectorium.ai",
+            "tagline": "Plan recomendado",
+            "improvement": "Nuevas integraciones ATS trimestrales y mejoras en scorecards colaborativos.",
+            "features": [
+                "Vacantes ilimitadas",
+                "Matching predictivo + ranking inteligente",
+                "Panel colaborativo para recruiters",
+                "Soporte prioritario en 4h",
+            ],
+        },
+        {
+            "name": "Enterprise",
+            "price": "A medida",
+            "description": "Suite completa de Talent Intelligence, seguridad corporativa y roadmap conjunto.",
+            "cta": "Agenda una demo",
+            "cta_url": "mailto:contacto@selectorium.ai",
+            "tagline": "Innovación conjunta",
+            "improvement": "Roadmap compartido con releases mensuales, APIs privadas y personalizaciones.",
+            "features": [
+                "Acceso multi-país y multi-marca",
+                "Modelos personalizados de scoring",
+                "SLAs dedicados y Customer Success",
+                "Implementación y training onsite",
+            ],
+        },
+    ]
+
+    metrics = [
+        {"value": "5x", "label": "Más rápido filtrando talento"},
+        {"value": "92%", "label": "Precisión promedio del matching"},
+        {"value": "-38%", "label": "Reducción en rotación del primer año"},
+    ]
+
+    pillars = [
+        {
+            "title": "Experiencia candidata memorable",
+            "description": "Portales personalizados, recordatorios automáticos y feedback en un solo hilo.",
+        },
+        {
+            "title": "Analítica accionable",
+            "description": "Mapas de habilidades, funnels por etapa y alertas tempranas de embudos saturados.",
+        },
+        {
+            "title": "Integración sencilla",
+            "description": "API y conectores nativos con herramientas ATS y colaboración vía Slack/Teams.",
+        },
+    ]
+
+    return render(
+        request,
+        "landing.html",
+        {
+            "plan_cards": plan_cards,
+            "metrics": metrics,
+            "pillars": pillars,
+        },
+    )
+
+
 # LOGIN
 def login_view(request):
     if request.method == "POST":
